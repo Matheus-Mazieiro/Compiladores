@@ -58,12 +58,12 @@ func main() {
 		if lex.SymbolicNames[token.GetTokenType()] == "RELAC" ||
 			lex.SymbolicNames[token.GetTokenType()] == "ARIT" ||
 			lex.SymbolicNames[token.GetTokenType()] == "LOGIC" {
-			fmt.Fprintf(output, "<'%s', '%s'>\n", token.GetText(), token.GetText())
+			fmt.Fprintf(output, "<'%s','%s'>\n", token.GetText(), token.GetText())
 			continue
 		}
 
 		name := getLiteralName(token.GetTokenType(), lex.LiteralNames, lex.SymbolicNames)
-		fmt.Fprintf(output, "<'%s', %s>\n", token.GetText(), name)
+		fmt.Fprintf(output, "<'%s',%s>\n", token.GetText(), name)
 
 	}
 }
@@ -91,7 +91,7 @@ func (l *MyErrorListener) SyntaxError(
 
 	if strings.HasPrefix(msg, prefix) {
 		invalidChar := strings.Trim(strings.TrimPrefix(msg, prefix), "'")
-		fmt.Fprintf(l.output, "Linha %d: %s - símbolo não identificado\n", line, invalidChar)
+		fmt.Fprintf(l.output, "Linha %d: %s - simbolo nao identificado\n", line, invalidChar)
 	} else {
 		// Caso seja erro sintático ou outro erro
 		fmt.Fprintf(l.output, "Erro na linha %d, coluna %d: %s\n", line, column, msg)
