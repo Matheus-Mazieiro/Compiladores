@@ -22,16 +22,26 @@ A gramática usada pode ser encontrada [neste arquivo](https://github.com/Matheu
 ### Como compilar e executar
 Certifique-se de ter o Go instalado em sua máquina.
 
-Entre no diretório do [analisador lexico](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T1%20-%20Analisador%20Lexico/go-lexer) dentro da pasta do T1, e compile o programa executando:
+Entre no diretório do [analisador lexico](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T1%20-%20Analisador%20Lexico/go-lexer) dentro da pasta do T1, e execute o programa:
 ```
-go build -o <nome_do_executavel> main.go
+./go run main.go <arquivo_de_entrada> <arquivo_de_saida>
 ```
 
-Para rodar o programa:
+### Gerar gramática
+Para gerar novas gramáticas, basta escrever a gramática em CalcLexer.g4 e executar o comando gen do Makefile presente em T1/go-lexer
 ```
-./<nome_do_executavel> <arquivo_de_entrada> <arquivo_de_saida>
+make gen
+```
+
+### Rodar os testes
+O corretor automático desponibilizado pelo professor para a avaliação dos alunos também se encontra neste repositório. Para executá-lo, basta rodar o comando test do Makefile presente em T1/go-lexer
+```
+make test
 ```
 
 ---
 
-Trabalho realizado por Matheus de Almeida Mazieiro (RA: 812050)
+Trabalho realizado por:
+- Carolina Martins Emilio Pelicce (RA: 811508)
+- Maristella Ramalho Rangel (RA: 821055)
+- Matheus de Almeida Mazieiro (RA: 812050)
