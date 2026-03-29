@@ -1,5 +1,6 @@
 lexer grammar CalcLexer;
 
+//Define uma regra para cada tipo de token (palavras reservadas, tipos de variaveis, etc)
 ALG: 'algoritmo';
 FIM_ALG: 'fim_algoritmo';
 DECLARE: 'declare';
@@ -35,6 +36,7 @@ LOGICO: 'logico';
 FALSO: 'falso';
 VERDADEIRO: 'verdadeiro';
 
+//Regras para operadores
 ABREPAR: '(';
 FECHAPAR: ')';
 ABRECOL: '[';
@@ -43,23 +45,33 @@ DOIS_PONTOS: ':';
 VIRG: ',';
 PONTO: '.';
 PONTOPONTO: '..';
-ARIT: '+' | '-' | '*' | '/' | '%' | '^';
-RELAC: '>' | '>=' | '<' | '<=' | '<>' | '=';
-LOGIC: 'e' | 'ou' | 'nao';
+ARIT: '+' | '-' | '*' | '/' | '%' | '^'; //Define operadores artimeticos
+RELAC: '>' | '>=' | '<' | '<=' | '<>' | '='; //Define operadores relacionais
+LOGIC: 'e' | 'ou' | 'nao'; //Define operadores lógicos
 ATRIB: '<-';
 ENDERECO: '&'; 
 
+// Expressão regular para números inteiros e reais 
 NUM_INT: [0-9]+;
 NUM_REAL: [0-9]+ '.' [0-9]+;
 
+//Expressão regular para capturar identificadores 
 IDENT: [a-zA-Z_][a-zA-Z_0-9]*;
+
+//Expressão regular para cadeia de caracteres
 CADEIA 	: '"' ( ESC_SEQ | ~('\''|'\\'|'"'|'\n') )* '"';
 fragment
 ESC_SEQ	: '\\\'';
+
+//Define regra para capturar erro de cadeia : não encontra aspas de fechamento, mas sim um \n
 ERRO_CADEIA:  '"' ( ESC_SEQ | ~('\''|'\\'|'"'| '\n') )* '\n';
 
+// Ignora espaços e comentários
 WS: [ \t\r\n]+ -> skip;
 COMENTARIO: '{' ( ~'\n' )*? '}' -> skip;
+
+// Regra para capturar comentário não fechado
 ERRO_COMENTARIO: '{' ( ~'}' )*? '\n';
 
+// Captura os demais casos de erro, porque . é um caractere coringa
 ERRO_DEMAIS: .;
