@@ -62,3 +62,4 @@ WS: [ \t\r\n]+ -> skip;
 COMENTARIO: '{' ( ~'\n' )*? '}' -> skip;
 ERRO_COMENTARIO: '{' ( ~'}' )*? '\n';
 
+ERRO_DEMAIS: .;

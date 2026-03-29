@@ -2,9 +2,8 @@ package main
 
 import (
 	"fmt"
-	"go-lexer/lexer"
+	lexer "go-lexer/parser"
 	"os"
-	"strings"
 
 	"github.com/antlr4-go/antlr/v4"
 )
@@ -70,6 +69,11 @@ func main() {
 			break
 		}
 
+		if lex.SymbolicNames[token.GetTokenType()] == "ERRO_DEMAIS" {
+			fmt.Fprintf(output, "Linha %d: %s - simbolo nao identificado\n", token.GetLine(), token.GetText())
+			break
+		}
+
 		//Caso seja algum operador, derá ser impresso o prórprio operador
 		if lex.SymbolicNames[token.GetTokenType()] == "RELAC" ||
 			lex.SymbolicNames[token.GetTokenType()] == "ARIT" ||
@@ -96,21 +100,4 @@ func getLiteralName(ttype int, literalNames, symbolicNames []string) string {
 	}
 
 	return "UNKNOWN"
-}
-
-// Função que lidará com um token nao reconhecido
-func (l *MyErrorListener) SyntaxError(
-	recognizer antlr.Recognizer,
-	offendingSymbol interface{},
-	line, column int,
-	msg string,
-	e antlr.RecognitionException,
-) {
-	const prefix = "token recognition error at: "
-
-	if strings.HasPrefix(msg, prefix) {
-		invalidChar := strings.Trim(strings.TrimPrefix(msg, prefix), "'")
-		fmt.Fprintf(l.output, "Linha %d: %s - simbolo nao identificado\n", line, invalidChar)
-	}
-	os.Exit(0)
 }

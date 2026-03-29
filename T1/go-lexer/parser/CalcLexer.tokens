@@ -53,6 +53,7 @@ ERRO_CADEIA=52
 WS=53
 COMENTARIO=54
 ERRO_COMENTARIO=55
+ERRO_DEMAIS=56
 'algoritmo'=1
 'fim_algoritmo'=2
 'declare'=3

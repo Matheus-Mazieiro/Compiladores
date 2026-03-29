@@ -1,6 +1,2 @@
 *.zip
 casos-de-teste
-tester.py
-*.jar
-CalcParser.g4
-*.txt
