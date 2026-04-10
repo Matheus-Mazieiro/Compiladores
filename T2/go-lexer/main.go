@@ -35,7 +35,7 @@ func main() {
 	defer output.Close()
 
 	//Objeto do lexer
-	lex := lexer.NewCalcLexer(input)
+	lex := lexer.NewCalcLexerLexer(input)
 
 	//Remove o listener padrão para poder controlar o que será impresso no caso de nao encontrar token
 	//E adiciona o listener próprio.
@@ -46,8 +46,21 @@ func main() {
 	}
 	lex.AddErrorListener(listener)
 
-	//Itera pelos tokens
-	for token := lex.NextToken(); token.GetTokenType() != antlr.TokenEOF; token = lex.NextToken() {
+	erroLexico := false
+
+	//Armazenar os tokens p o parser
+	tokens := antlr.NewCommonTokenStream(lex, antlr.TokenDefaultChannel)
+	
+	//Itera pelos tokens (lexer) 
+	i := 0
+	for{
+		// Pega o token (força carregamento no buffer)
+		token := tokens.LT(i + 1)
+
+		// Para se chegar no fim do arquivo
+		if token.GetTokenType() == antlr.TokenEOF {
+            break
+        }
 
 		//Acaba a execução caso seja um token invalido
 		//O erro surgido é jogado para o listener, que exibe para o usuário
@@ -59,6 +72,7 @@ func main() {
 		//Gramática e retornará um "ERRO_COMENTARIO"
 		if lex.SymbolicNames[token.GetTokenType()] == "ERRO_COMENTARIO" {
 			fmt.Fprintf(output, "Linha %d: comentario nao fechado\n", token.GetLine())
+			erroLexico = true
 			break
 		}
 
@@ -66,11 +80,13 @@ func main() {
 		//Gramática e retornará um "ERRO_CADEIA"
 		if lex.SymbolicNames[token.GetTokenType()] == "ERRO_CADEIA" {
 			fmt.Fprintf(output, "Linha %d: cadeia literal nao fechada\n", token.GetLine())
+			erroLexico = true
 			break
 		}
 
 		if lex.SymbolicNames[token.GetTokenType()] == "ERRO_DEMAIS" {
 			fmt.Fprintf(output, "Linha %d: %s - simbolo nao identificado\n", token.GetLine(), token.GetText())
+			erroLexico = true
 			break
 		}
 
@@ -85,7 +101,22 @@ func main() {
 		//Demais tokens
 		name := getLiteralName(token.GetTokenType(), lex.LiteralNames, lex.SymbolicNames)
 		fmt.Fprintf(output, "<'%s',%s>\n", token.GetText(), name)
+		i++
+	}
 
+	// Parser: só é executado se n tem erros lexicos
+	if !erroLexico{
+		//volta para o início dos tokens
+		tokens.Seek(0)
+
+		p := lexer.NewCalcLexerParser(tokens)
+
+		// Adiciona o listener de erro no parser
+		p.RemoveErrorListeners()
+		p.AddErrorListener(listener)
+
+		//Chama a primeira regra do arquivo .g4
+		p.Programa()
 	}
 }
 
@@ -100,4 +131,24 @@ func getLiteralName(ttype int, literalNames, symbolicNames []string) string {
 	}
 
 	return "UNKNOWN"
+}
+
+func (l *MyErrorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
+
+    // Recupera token que causou o erro
+    token := offendingSymbol.(antlr.Token)
+    tokenText := token.GetText()
+
+    //Formatando EOF p impressao
+    if tokenText == "<EOF>" {
+        tokenText = "EOF"
+    }
+
+    // Linha X: erro sintatico proximo a TOKEN
+    fmt.Fprintf(l.output, "Linha %d: erro sintatico proximo a %s\n", line, tokenText)
+	fmt.Fprintf(l.output, "Fim da compilacao\n")
+    
+	// Para no primeiro erro sintático
+    l.output.Close()
+    os.Exit(0) 
 }
