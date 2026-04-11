@@ -13,7 +13,7 @@ Além de identificar corretamente os tokens válidos, o analisador também deve 
 - Cadeias de caracteres não finalizadas.
 
 ### Tecnologias Utilizadas
-- [Go (1.18+)](https://go.dev)
+- [Go (1.22+)](https://go.dev)
 
 - [Antlr](https://www.antlr.org/) — para geração do analisador a partir de uma gramática .g4
 
