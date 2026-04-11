@@ -32,11 +32,19 @@ Para gerar novas gramáticas, basta escrever a gramática em CalcLexer.g4 e exec
 ```
 make gen
 ```
+Entretanto, para executar este comando em um computador que não tem make, basta executar diretamente
+```
+java -jar ../../antlr-4.13.2-complete.jar -Dlanguage=Go -o parser CalcLexer.g4 
+```
 
 ### Rodar os testes
 O corretor automático desponibilizado pelo professor para a avaliação dos alunos também se encontra neste repositório. Para executá-lo, basta rodar o comando test do Makefile presente em T1/go-lexer
 ```
 make test
+```
+Entretanto, para executar este comando em um computador que não tem make, basta executar diretamente
+```
+java -jar ../../compiladores-corretor-automatico-1.0-SNAPSHOT-jar-with-dependencies.jar "go run main.go" gcc ../../temp ../../casos-de-teste/ "811508 821055 812050" t1
 ```
 
 ---
