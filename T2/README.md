@@ -14,6 +14,11 @@ A gramática usada pode ser encontrada [neste arquivo](http://github.com/Matheus
 ### Como compilar e executar
 Certifique-se de ter o Go instalado em sua máquina.
 
+Antes de rodar o projeto, é necessário baixar e organizar as dependências:
+```
+go mod tidy
+```
+
 Entre no diretório do [analisador sintático](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T2/go-lexer) dentro da pasta do T2, e execute o programa:
 ```
 ./go run main.go <arquivo_de_entrada> <arquivo_de_saida>
