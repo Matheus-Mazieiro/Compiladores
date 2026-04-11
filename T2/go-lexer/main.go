@@ -8,6 +8,10 @@ import (
 	"github.com/antlr4-go/antlr/v4"
 )
 
+const (
+	debugT1 = false
+)
+
 // Estrutura que captará o erro, necessária para pegar o 'token not found'
 type MyErrorListener struct {
 	*antlr.DefaultErrorListener
@@ -50,17 +54,17 @@ func main() {
 
 	//Armazenar os tokens p o parser
 	tokens := antlr.NewCommonTokenStream(lex, antlr.TokenDefaultChannel)
-	
-	//Itera pelos tokens (lexer) 
+
+	//Itera pelos tokens (lexer)
 	i := 0
-	for{
+	for {
 		// Pega o token (força carregamento no buffer)
 		token := tokens.LT(i + 1)
 
 		// Para se chegar no fim do arquivo
 		if token.GetTokenType() == antlr.TokenEOF {
-            break
-        }
+			break
+		}
 
 		//Acaba a execução caso seja um token invalido
 		//O erro surgido é jogado para o listener, que exibe para o usuário
@@ -100,12 +104,14 @@ func main() {
 
 		//Demais tokens
 		name := getLiteralName(token.GetTokenType(), lex.LiteralNames, lex.SymbolicNames)
-		fmt.Fprintf(output, "<'%s',%s>\n", token.GetText(), name)
+		if debugT1 {
+			fmt.Fprintf(output, "<'%s',%s>\n", token.GetText(), name)
+		}
 		i++
 	}
 
 	// Parser: só é executado se n tem erros lexicos
-	if !erroLexico{
+	if !erroLexico {
 		//volta para o início dos tokens
 		tokens.Seek(0)
 
@@ -117,7 +123,10 @@ func main() {
 
 		//Chama a primeira regra do arquivo .g4
 		p.Programa()
+	} else {
+		fmt.Fprintf(output, "Fim da compilacao\n")
 	}
+
 }
 
 // Necessário para evitar index out of bounds ao recuperar os nomes
@@ -135,20 +144,20 @@ func getLiteralName(ttype int, literalNames, symbolicNames []string) string {
 
 func (l *MyErrorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymbol interface{}, line, column int, msg string, e antlr.RecognitionException) {
 
-    // Recupera token que causou o erro
-    token := offendingSymbol.(antlr.Token)
-    tokenText := token.GetText()
+	// Recupera token que causou o erro
+	token := offendingSymbol.(antlr.Token)
+	tokenText := token.GetText()
 
-    //Formatando EOF p impressao
-    if tokenText == "<EOF>" {
-        tokenText = "EOF"
-    }
+	//Formatando EOF p impressao
+	if tokenText == "<EOF>" {
+		tokenText = "EOF"
+	}
 
-    // Linha X: erro sintatico proximo a TOKEN
-    fmt.Fprintf(l.output, "Linha %d: erro sintatico proximo a %s\n", line, tokenText)
+	// Linha X: erro sintatico proximo a TOKEN
+	fmt.Fprintf(l.output, "Linha %d: erro sintatico proximo a %s\n", line, tokenText)
 	fmt.Fprintf(l.output, "Fim da compilacao\n")
-    
+
 	// Para no primeiro erro sintático
-    l.output.Close()
-    os.Exit(0) 
+	l.output.Close()
+	os.Exit(0)
 }
