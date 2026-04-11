@@ -148,7 +148,7 @@ func (l *MyErrorListener) SyntaxError(recognizer antlr.Recognizer, offendingSymb
 	token := offendingSymbol.(antlr.Token)
 	tokenText := token.GetText()
 
-	//Formatando EOF p impressao
+	//Formatando EOF para impressao
 	if tokenText == "<EOF>" {
 		tokenText = "EOF"
 	}
