@@ -30,7 +30,7 @@ java -jar ../../antlr-4.13.2-complete.jar -Dlanguage=Go -o parser CalcLexer.g4
 ```
 
 ### Rodar os testes
-O corretor automático desponibilizado pelo professor para a avaliação dos alunos também se encontra neste repositório. Para executá-lo, basta rodar o comando test do Makefile presente em T1/go-lexer
+O corretor automático desponibilizado pelo professor para a avaliação dos alunos também se encontra neste repositório. Para executá-lo, basta rodar o comando test do Makefile presente em T2/go-lexer
 ```
 make test
 ```
