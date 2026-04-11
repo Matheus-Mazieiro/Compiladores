@@ -9,12 +9,12 @@ Nesta etapa, desenvolvemos o analisador sintático da linguagem LA. A função p
 
 - [Antlr](https://www.antlr.org/) — para geração do analisador a partir de uma gramática .g4
 
-A gramática usada pode ser encontrada [neste arquivo](https://github.com/Matheus-Mazieiro/Compiladores/blob/master/T1%20-%20Analisador%20Lexico/go-lexer/CalcLexer.g4), e o código gerado pelo ANTLR está disponível [nesta pasta](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T1%20-%20Analisador%20Lexico/go-lexer/lexer).
+A gramática usada pode ser encontrada [neste arquivo](http://github.com/Matheus-Mazieiro/Compiladores/blob/master/T2/go-lexer/CalcLexer.g4), e o código gerado pelo ANTLR está disponível [nesta pasta](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T2/go-lexer).
 
 ### Como compilar e executar
 Certifique-se de ter o Go instalado em sua máquina.
 
-Entre no diretório do [analisador sintático](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T1%20-%20Analisador%20Lexico/go-lexer) dentro da pasta do T2, e execute o programa:
+Entre no diretório do [analisador sintático](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T2/go-lexer) dentro da pasta do T2, e execute o programa:
 ```
 ./go run main.go <arquivo_de_entrada> <arquivo_de_saida>
 ```
