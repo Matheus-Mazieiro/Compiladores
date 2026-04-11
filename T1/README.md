@@ -22,7 +22,7 @@ A gramática usada pode ser encontrada [neste arquivo](https://github.com/Matheu
 ### Como compilar e executar
 Certifique-se de ter o Go instalado em sua máquina.
 
-Entre no diretório do [analisador lexico](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T1%20-%20Analisador%20Lexico/go-lexer) dentro da pasta do T1, e execute o programa:
+Entre no diretório do [analisador lexico](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T1/go-lexer) dentro da pasta do T1, e execute o programa:
 ```
 ./go run main.go <arquivo_de_entrada> <arquivo_de_saida>
 ```
