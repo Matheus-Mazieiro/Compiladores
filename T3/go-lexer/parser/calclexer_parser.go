@@ -583,6 +583,16 @@ func (s *ProgramaContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *ProgramaContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitPrograma(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Programa() (localctx IProgramaContext) {
 	localctx = NewProgramaContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 0, CalcLexerParserRULE_programa)
@@ -733,6 +743,16 @@ func (s *DeclaracoesContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *DeclaracoesContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitDeclaracoes(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Declaracoes() (localctx IDeclaracoesContext) {
 	localctx = NewDeclaracoesContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 2, CalcLexerParserRULE_declaracoes)
@@ -869,6 +889,16 @@ func (s *Decl_local_globalContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Decl_local_globalContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitDecl_local_global(s)
+	}
+}
+
+func (s *Decl_local_globalContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitDecl_local_global(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -1069,6 +1099,16 @@ func (s *Declaracao_localContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Declaracao_localContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitDeclaracao_local(s)
+	}
+}
+
+func (s *Declaracao_localContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitDeclaracao_local(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -1329,6 +1369,16 @@ func (s *VariavelContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *VariavelContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitVariavel(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Variavel() (localctx IVariavelContext) {
 	localctx = NewVariavelContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 8, CalcLexerParserRULE_variavel)
@@ -1492,6 +1542,16 @@ func (s *IdentificadorContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *IdentificadorContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitIdentificador(s)
+	}
+}
+
+func (s *IdentificadorContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitIdentificador(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -1687,6 +1747,16 @@ func (s *DimensaoContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *DimensaoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitDimensao(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Dimensao() (localctx IDimensaoContext) {
 	localctx = NewDimensaoContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 12, CalcLexerParserRULE_dimensao)
@@ -1842,6 +1912,16 @@ func (s *TipoContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *TipoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitTipo(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Tipo() (localctx ITipoContext) {
 	localctx = NewTipoContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 14, CalcLexerParserRULE_tipo)
@@ -1969,6 +2049,16 @@ func (s *Tipo_basicoContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *Tipo_basicoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitTipo_basico(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Tipo_basico() (localctx ITipo_basicoContext) {
 	localctx = NewTipo_basicoContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 16, CalcLexerParserRULE_tipo_basico)
@@ -2084,6 +2174,16 @@ func (s *Tipo_basico_identContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Tipo_basico_identContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitTipo_basico_ident(s)
+	}
+}
+
+func (s *Tipo_basico_identContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitTipo_basico_ident(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -2212,6 +2312,16 @@ func (s *Tipo_estendidoContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Tipo_estendidoContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitTipo_estendido(s)
+	}
+}
+
+func (s *Tipo_estendidoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitTipo_estendido(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -2344,6 +2454,16 @@ func (s *Valor_constanteContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Valor_constanteContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitValor_constante(s)
+	}
+}
+
+func (s *Valor_constanteContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitValor_constante(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -2493,6 +2613,16 @@ func (s *RegistroContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *RegistroContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitRegistro(s)
+	}
+}
+
+func (s *RegistroContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitRegistro(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -2774,6 +2904,16 @@ func (s *Declaracao_globalContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Declaracao_globalContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitDeclaracao_global(s)
+	}
+}
+
+func (s *Declaracao_globalContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitDeclaracao_global(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -3131,6 +3271,16 @@ func (s *ParametrosContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *ParametrosContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitParametros(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Parametros() (localctx IParametrosContext) {
 	localctx = NewParametrosContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 28, CalcLexerParserRULE_parametros)
@@ -3331,6 +3481,16 @@ func (s *CorpoContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *CorpoContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitCorpo(s)
+	}
+}
+
+func (s *CorpoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCorpo(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -3536,6 +3696,16 @@ func (s *ParametroContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *ParametroContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitParametro(s)
+	}
+}
+
+func (s *ParametroContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitParametro(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -3856,6 +4026,16 @@ func (s *CmdContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *CmdContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmd(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Cmd() (localctx ICmdContext) {
 	localctx = NewCmdContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 34, CalcLexerParserRULE_cmd)
@@ -4083,6 +4263,16 @@ func (s *CmdLeiaContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *CmdLeiaContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitCmdLeia(s)
+	}
+}
+
+func (s *CmdLeiaContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmdLeia(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -4331,6 +4521,16 @@ func (s *CmdEscrevaContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *CmdEscrevaContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmdEscreva(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) CmdEscreva() (localctx ICmdEscrevaContext) {
 	localctx = NewCmdEscrevaContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 38, CalcLexerParserRULE_cmdEscreva)
@@ -4549,6 +4749,16 @@ func (s *CmdSeContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *CmdSeContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitCmdSe(s)
+	}
+}
+
+func (s *CmdSeContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmdSe(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -4817,6 +5027,16 @@ func (s *CmdCasoContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *CmdCasoContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitCmdCaso(s)
+	}
+}
+
+func (s *CmdCasoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmdCaso(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -5091,6 +5311,16 @@ func (s *CmdParaContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *CmdParaContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmdPara(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) CmdPara() (localctx ICmdParaContext) {
 	localctx = NewCmdParaContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 44, CalcLexerParserRULE_cmdPara)
@@ -5327,6 +5557,16 @@ func (s *CmdEnquantoContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *CmdEnquantoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmdEnquanto(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) CmdEnquanto() (localctx ICmdEnquantoContext) {
 	localctx = NewCmdEnquantoContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 46, CalcLexerParserRULE_cmdEnquanto)
@@ -5530,6 +5770,16 @@ func (s *CmdFacaContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *CmdFacaContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmdFaca(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) CmdFaca() (localctx ICmdFacaContext) {
 	localctx = NewCmdFacaContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 48, CalcLexerParserRULE_cmdFaca)
@@ -5691,6 +5941,16 @@ func (s *CmdAtribuicaoContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *CmdAtribuicaoContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitCmdAtribuicao(s)
+	}
+}
+
+func (s *CmdAtribuicaoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmdAtribuicao(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -5881,6 +6141,16 @@ func (s *CmdChamadaContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *CmdChamadaContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmdChamada(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) CmdChamada() (localctx ICmdChamadaContext) {
 	localctx = NewCmdChamadaContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 52, CalcLexerParserRULE_cmdChamada)
@@ -6044,6 +6314,16 @@ func (s *CmdRetorneContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *CmdRetorneContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitCmdRetorne(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) CmdRetorne() (localctx ICmdRetorneContext) {
 	localctx = NewCmdRetorneContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 54, CalcLexerParserRULE_cmdRetorne)
@@ -6179,6 +6459,16 @@ func (s *SelecaoContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *SelecaoContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitSelecao(s)
+	}
+}
+
+func (s *SelecaoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitSelecao(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -6352,6 +6642,16 @@ func (s *Item_selecaoContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *Item_selecaoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitItem_selecao(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Item_selecao() (localctx IItem_selecaoContext) {
 	localctx = NewItem_selecaoContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 58, CalcLexerParserRULE_item_selecao)
@@ -6519,6 +6819,16 @@ func (s *ConstantesContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *ConstantesContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitConstantes(s)
+	}
+}
+
+func (s *ConstantesContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitConstantes(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -6697,6 +7007,16 @@ func (s *Numero_intervaloContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *Numero_intervaloContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitNumero_intervalo(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Numero_intervalo() (localctx INumero_intervaloContext) {
 	localctx = NewNumero_intervaloContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 62, CalcLexerParserRULE_numero_intervalo)
@@ -6837,6 +7157,16 @@ func (s *Op_unarioContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Op_unarioContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitOp_unario(s)
+	}
+}
+
+func (s *Op_unarioContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitOp_unario(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -7014,6 +7344,16 @@ func (s *Exp_aritmeticaContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Exp_aritmeticaContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitExp_aritmetica(s)
+	}
+}
+
+func (s *Exp_aritmeticaContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitExp_aritmetica(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -7223,6 +7563,16 @@ func (s *TermoContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *TermoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitTermo(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Termo() (localctx ITermoContext) {
 	localctx = NewTermoContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 68, CalcLexerParserRULE_termo)
@@ -7422,6 +7772,16 @@ func (s *FatorContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *FatorContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitFator(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Fator() (localctx IFatorContext) {
 	localctx = NewFatorContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 70, CalcLexerParserRULE_fator)
@@ -7531,6 +7891,16 @@ func (s *Op1Context) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *Op1Context) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitOp1(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Op1() (localctx IOp1Context) {
 	localctx = NewOp1Context(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 72, CalcLexerParserRULE_op1)
@@ -7623,6 +7993,16 @@ func (s *Op2Context) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *Op2Context) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitOp2(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Op2() (localctx IOp2Context) {
 	localctx = NewOp2Context(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 74, CalcLexerParserRULE_op2)
@@ -7712,6 +8092,16 @@ func (s *Op3Context) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Op3Context) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitOp3(s)
+	}
+}
+
+func (s *Op3Context) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitOp3(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -7854,6 +8244,16 @@ func (s *ParcelaContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *ParcelaContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitParcela(s)
+	}
+}
+
+func (s *ParcelaContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitParcela(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -8072,6 +8472,16 @@ func (s *Parcela_unarioContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Parcela_unarioContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitParcela_unario(s)
+	}
+}
+
+func (s *Parcela_unarioContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitParcela_unario(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -8325,6 +8735,16 @@ func (s *Parcela_nao_unarioContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *Parcela_nao_unarioContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitParcela_nao_unario(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Parcela_nao_unario() (localctx IParcela_nao_unarioContext) {
 	localctx = NewParcela_nao_unarioContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 82, CalcLexerParserRULE_parcela_nao_unario)
@@ -8504,6 +8924,16 @@ func (s *Exp_relacionalContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *Exp_relacionalContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitExp_relacional(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Exp_relacional() (localctx IExp_relacionalContext) {
 	localctx = NewExp_relacionalContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 84, CalcLexerParserRULE_exp_relacional)
@@ -8604,6 +9034,16 @@ func (s *Op_relacionalContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Op_relacionalContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitOp_relacional(s)
+	}
+}
+
+func (s *Op_relacionalContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitOp_relacional(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -8786,6 +9226,16 @@ func (s *ExpressaoContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *ExpressaoContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitExpressao(s)
+	}
+}
+
+func (s *ExpressaoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitExpressao(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -8988,6 +9438,16 @@ func (s *Termo_logicoContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *Termo_logicoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitTermo_logico(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Termo_logico() (localctx ITermo_logicoContext) {
 	localctx = NewTermo_logicoContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 90, CalcLexerParserRULE_termo_logico)
@@ -9115,6 +9575,16 @@ func (s *Fator_logicoContext) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Fator_logicoContext) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitFator_logico(s)
+	}
+}
+
+func (s *Fator_logicoContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitFator_logico(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
@@ -9252,6 +9722,16 @@ func (s *Parcela_logicaContext) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *Parcela_logicaContext) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitParcela_logica(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Parcela_logica() (localctx IParcela_logicaContext) {
 	localctx = NewParcela_logicaContext(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 94, CalcLexerParserRULE_parcela_logica)
@@ -9364,6 +9844,16 @@ func (s *Op_logico_1Context) ExitRule(listener antlr.ParseTreeListener) {
 	}
 }
 
+func (s *Op_logico_1Context) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitOp_logico_1(s)
+
+	default:
+		return t.VisitChildren(s)
+	}
+}
+
 func (p *CalcLexerParser) Op_logico_1() (localctx IOp_logico_1Context) {
 	localctx = NewOp_logico_1Context(p, p.GetParserRuleContext(), p.GetState())
 	p.EnterRule(localctx, 96, CalcLexerParserRULE_op_logico_1)
@@ -9448,6 +9938,16 @@ func (s *Op_logico_2Context) EnterRule(listener antlr.ParseTreeListener) {
 func (s *Op_logico_2Context) ExitRule(listener antlr.ParseTreeListener) {
 	if listenerT, ok := listener.(CalcLexerListener); ok {
 		listenerT.ExitOp_logico_2(s)
+	}
+}
+
+func (s *Op_logico_2Context) Accept(visitor antlr.ParseTreeVisitor) interface{} {
+	switch t := visitor.(type) {
+	case CalcLexerVisitor:
+		return t.VisitOp_logico_2(s)
+
+	default:
+		return t.VisitChildren(s)
 	}
 }
 
