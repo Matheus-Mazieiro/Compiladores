@@ -1,8 +1,9 @@
 # Compilador para a Linguagem LA
 Este projeto é parte do trabalho da disciplina de Compiladores na UFSCar, orientado pelo Prof. Jander. O objetivo é implementar, em etapas, um compilador para a linguagem LA (Linguagem Algorítmica), desenvolvida no âmbito do DC/UFSCar.
 
-## T2 — Analisador Sintático
-Nesta etapa, desenvolvemos o analisador sintático da linguagem LA. A função principal desse módulo é apontar onde existe erro sintático, indicando a linha e o lexema que causou a detecção do erro.
+## T2 — Analisador Semântico
+Nesta etapa, desenvolvemos o analisador semântico da linguagem LA. O analisador semântico verifica se o programa está correto em termos de significado, analisando o uso e a declaração de identificadores, controle de escopo e compatibilidade de tipos em atribuições e expressões. Ele detecta erros como variáveis não declaradas, redefinições no mesmo escopo e incompatibilidades de tipo, sem interromper a execução, permitindo reportar todos os erros encontrados no código.
+
 
 ### Tecnologias Utilizadas
 - [Go (1.22+)](https://go.dev)
@@ -14,7 +15,7 @@ A gramática usada pode ser encontrada [neste arquivo](http://github.com/Matheus
 ### Como compilar e executar
 Certifique-se de ter o Go instalado em sua máquina.
 
-Entre no diretório do [analisador sintático](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T2/go-lexer) dentro da pasta do T2, e execute o programa:
+Entre no diretório do [analisador semântico](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T3/go-lexer) dentro da pasta do T3, e execute o programa:
 ```
 ./go run main.go <arquivo_de_entrada> <arquivo_de_saida>
 ```
