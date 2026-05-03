@@ -35,13 +35,9 @@ func main() {
 	// PARSE TREE
 	tree := p.Programa()
 
-	fmt.Println("DEBUG: árvore gerada")
-
 	// SEMÂNTICO
 	sem := NewJanderSemantico()
 	tree.Accept(sem)
-
-	fmt.Println("DEBUG: análise semântica finalizada")
 
 	// SAÍDA
 	if len(ErrosSemanticos) > 0 {

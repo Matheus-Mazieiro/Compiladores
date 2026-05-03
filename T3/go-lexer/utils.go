@@ -12,7 +12,6 @@ var variaveisComTipoInvalido = make(map[string]bool)
 
 func AdicionarErroSemantico(linha int, msg string) {
 	erro := fmt.Sprintf("Linha %d: %s", linha, msg)
-	fmt.Println("DEBUG ERRO:", erro)
 	ErrosSemanticos = append(ErrosSemanticos, erro)
 }
 
