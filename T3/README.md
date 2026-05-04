@@ -21,15 +21,24 @@ Entre no diretório do [analisador semântico](https://github.com/Matheus-Maziei
 ```
 
 ### Gerar gramática
-Para gerar novas gramáticas, basta escrever a gramática em CalcLexer.g4 e executar o comando gen do Makefile presente em T1/go-lexer
+Para gerar novas gramáticas, basta escrever a gramática em CalcLexer.g4 e executar o comando gen do Makefile presente em T3/go-lexer
 ```
 make gen
 ```
 
 ### Rodar os testes
-O corretor automático desponibilizado pelo professor para a avaliação dos alunos também se encontra neste repositório. Para executá-lo, basta rodar o comando test do Makefile presente em T1/go-lexer
+O corretor automático desponibilizado pelo professor para a avaliação dos alunos também se encontra neste repositório. Para executá-lo, basta rodar os comandos build e test do Makefile presente em T3/go-lexer
 ```
+make build
 make test
+```
+
+Entretanto, para executar este comando em um computador que não tem make, basta executar diretamente
+
+```
+go build -o semantico *.go
+java -jar ../../compiladores-corretor-automatico-1.0-SNAPSHOT-jar-with-dependencies.jar "go run main.go" gcc ../../temp ../../casos-de-teste/ "811508 821055 812050" t1
+
 ```
 
 ---
