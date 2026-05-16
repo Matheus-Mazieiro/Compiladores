@@ -29,7 +29,7 @@ cmdPara : PARA IDENT ATRIB exp_aritmetica ATE exp_aritmetica FACA cmd* FIM_PARA 
 cmdEnquanto : ENQUANTO expressao FACA cmd* FIM_ENQUANTO ;
 cmdFaca : FACA cmd* ATE expressao ;
 cmdAtribuicao: PONTEIRO? identificador ATRIB expressao;
-cmdChamada: IDENT ABREPAR expressao (VIRG expressao)* FECHAPAR;
+cmdChamada: IDENT ABREPAR (expressao (VIRG expressao)*)? FECHAPAR;
 cmdRetorne: RETORNE expressao;
 selecao: item_selecao*;
 item_selecao: constantes DOIS_PONTOS cmd*;

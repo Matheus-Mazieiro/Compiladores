@@ -1,48 +1,6 @@
-// // LEMBRAR DE TIRAR PRINTFS DE DEBUG ANTES DE ENTREGAR O TRABALHO
-// package main
-
-// type TipoJander int
-
-// const (
-// 	INTEIRO TipoJander = iota
-// 	REAL
-// 	LITERAL
-// 	LOGICO
-// 	INVALIDO
-// )
-
-// type EntradaTabela struct {
-// 	Nome string
-// 	Tipo TipoJander
-// }
-
-// type TabelaDeSimbolos struct {
-// 	tabela map[string]EntradaTabela
-// }
-
-// func NewTabelaDeSimbolos() *TabelaDeSimbolos {
-// 	return &TabelaDeSimbolos{
-// 		tabela: make(map[string]EntradaTabela),
-// 	}
-// }
-
-// func (t *TabelaDeSimbolos) Adicionar(nome string, tipo TipoJander) {
-// 	t.tabela[nome] = EntradaTabela{nome, tipo}
-// }
-
-// func (t *TabelaDeSimbolos) Existe(nome string) bool {
-// 	_, ok := t.tabela[nome]
-// 	return ok
-// }
-
-// func (t *TabelaDeSimbolos) Verificar(nome string) TipoJander {
-// 	if val, ok := t.tabela[nome]; ok {
-// 		return val.Tipo
-// 	}
-// 	return INVALIDO
-// }
-// LEMBRAR DE TIRAR PRINTFS DE DEBUG ANTES DE ENTREGAR O TRABALHO
 package main
+
+import "strings"
 
 type TipoJander int
 
@@ -51,7 +9,10 @@ const (
 	REAL
 	LITERAL
 	LOGICO
-	PONTEIRO
+	PONTEIRO_INTEIRO
+	PONTEIRO_REAL
+	PONTEIRO_LITERAL
+	PONTEIRO_LOGICO
 	REGISTRO
 	REGISTRO_TIPO
 	ENDERECO
@@ -61,52 +22,30 @@ const (
 )
 
 type EntradaTabela struct {
-	Nome string
-	Tipo TipoJander
-
-	// Funções/procedimentos
-	Parametros  []TipoJander
-	TipoRetorno TipoJander
-
-	// Registros
+	Nome           string
+	Tipo           TipoJander
+	Parametros     []TipoJander
+	TipoRetorno    TipoJander
 	CamposRegistro map[string]TipoJander
-
-	// Arrays
-	Dimensoes []int
-
-	// Constantes
+	Dimensoes      []int
 	ValorConstante interface{}
 }
 
 type TabelaDeSimbolos struct {
-	escopos []map[string]EntradaTabela
-
-	// Controle de função
+	escopos          []map[string]EntradaTabela
 	escoposFuncao    []bool
 	tipoRetornoAtual TipoJander
 }
 
 func NewTabelaDeSimbolos() *TabelaDeSimbolos {
-	t := &TabelaDeSimbolos{
-		escopos:           []map[string]EntradaTabela{},
-		escoposFuncao:     []bool{},
-		tipoRetornoAtual:  INVALIDO,
-	}
-
+	t := &TabelaDeSimbolos{}
 	t.NovoEscopo(false)
-
 	return t
 }
-
-// ================= ESCOPOS =================
 
 func (t *TabelaDeSimbolos) NovoEscopo(isFuncao bool) {
 	t.escopos = append(t.escopos, make(map[string]EntradaTabela))
 	t.escoposFuncao = append(t.escoposFuncao, isFuncao)
-
-	if isFuncao {
-		t.tipoRetornoAtual = INVALIDO
-	}
 }
 
 func (t *TabelaDeSimbolos) AbandonarEscopo() {
@@ -116,11 +55,6 @@ func (t *TabelaDeSimbolos) AbandonarEscopo() {
 
 	if len(t.escoposFuncao) > 0 {
 		t.escoposFuncao = t.escoposFuncao[:len(t.escoposFuncao)-1]
-	}
-
-	if len(t.escoposFuncao) == 0 ||
-		!t.escoposFuncao[len(t.escoposFuncao)-1] {
-		t.tipoRetornoAtual = INVALIDO
 	}
 }
 
@@ -140,9 +74,8 @@ func (t *TabelaDeSimbolos) ObterTipoRetornoFuncaoAtual() TipoJander {
 	return t.tipoRetornoAtual
 }
 
-// ================= ADIÇÃO =================
-
 func (t *TabelaDeSimbolos) Adicionar(nome string, tipo TipoJander) {
+
 	escopoAtual := t.escopos[len(t.escopos)-1]
 
 	entrada := EntradaTabela{
@@ -157,98 +90,45 @@ func (t *TabelaDeSimbolos) Adicionar(nome string, tipo TipoJander) {
 	escopoAtual[nome] = entrada
 }
 
-func (t *TabelaDeSimbolos) AdicionarConstante(
-	nome string,
-	tipo TipoJander,
-	valor interface{},
-) {
-	escopoAtual := t.escopos[len(t.escopos)-1]
+func (t *TabelaDeSimbolos) AdicionarFuncao(nome string, tipoRetorno TipoJander, parametros []TipoJander) {
 
-	escopoAtual[nome] = EntradaTabela{
-		Nome:            nome,
-		Tipo:            tipo,
-		ValorConstante:  valor,
-	}
-}
-
-func (t *TabelaDeSimbolos) AdicionarArray(
-	nome string,
-	tipo TipoJander,
-	dimensoes []int,
-) {
-	escopoAtual := t.escopos[len(t.escopos)-1]
-
-	escopoAtual[nome] = EntradaTabela{
-		Nome:       nome,
-		Tipo:       tipo,
-		Dimensoes:  dimensoes,
-	}
-}
-
-func (t *TabelaDeSimbolos) AdicionarFuncao(
-	nome string,
-	tipoRetorno TipoJander,
-	parametros []TipoJander,
-) {
 	escopoAtual := t.escopos[len(t.escopos)-1]
 
 	tipo := FUNCAO
+
 	if tipoRetorno == INVALIDO {
 		tipo = PROCEDIMENTO
 	}
 
 	escopoAtual[nome] = EntradaTabela{
-		Nome:         nome,
-		Tipo:         tipo,
-		Parametros:   parametros,
-		TipoRetorno:  tipoRetorno,
+		Nome:        nome,
+		Tipo:        tipo,
+		Parametros:  parametros,
+		TipoRetorno: tipoRetorno,
 	}
 }
-
-// ================= REGISTROS =================
-
-func (t *TabelaDeSimbolos) AdicionarCampoRegistro(
-	nomeRegistro string,
-	nomeCampo string,
-	tipoCampo TipoJander,
-) {
-	for i := len(t.escopos) - 1; i >= 0; i-- {
-		if entrada, ok := t.escopos[i][nomeRegistro]; ok {
-
-			if entrada.CamposRegistro == nil {
-				entrada.CamposRegistro = make(map[string]TipoJander)
-			}
-
-			entrada.CamposRegistro[nomeCampo] = tipoCampo
-
-			t.escopos[i][nomeRegistro] = entrada
-			return
-		}
-	}
-}
-
-// ================= CONSULTAS =================
 
 func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
+
 	nomeBase := nomeCompleto
 
-	// registro.campo
-	if contains(nomeCompleto, ".") {
-		nomeBase = split(nomeCompleto, ".")[0]
+	if strings.Contains(nomeCompleto, ".") {
+		partes := strings.Split(nomeCompleto, ".")
+		nomeBase = partes[0]
 	}
 
-	// vetor[1]
-	if contains(nomeCompleto, "[") {
-		nomeBase = nomeCompleto[:index(nomeCompleto, "[")]
+	if strings.Contains(nomeCompleto, "[") {
+		nomeBase = nomeCompleto[:strings.Index(nomeCompleto, "[")]
 	}
 
 	for i := len(t.escopos) - 1; i >= 0; i-- {
 
 		if entrada, ok := t.escopos[i][nomeBase]; ok {
 
-			// Campo de registro
-			if contains(nomeCompleto, ".") {
-				partes := split(nomeCompleto, ".")
+			if strings.Contains(nomeCompleto, ".") {
+
+				partes := strings.Split(nomeCompleto, ".")
+
 				if len(partes) < 2 {
 					return false
 				}
@@ -263,11 +143,6 @@ func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
 				return false
 			}
 
-			// Array
-			if contains(nomeCompleto, "[") {
-				return entrada.Dimensoes != nil
-			}
-
 			return true
 		}
 	}
@@ -276,23 +151,26 @@ func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
 }
 
 func (t *TabelaDeSimbolos) Verificar(nomeCompleto string) TipoJander {
+
 	nomeBase := nomeCompleto
 
-	if contains(nomeCompleto, ".") {
-		nomeBase = split(nomeCompleto, ".")[0]
+	if strings.Contains(nomeCompleto, ".") {
+		partes := strings.Split(nomeCompleto, ".")
+		nomeBase = partes[0]
 	}
 
-	if contains(nomeCompleto, "[") {
-		nomeBase = nomeCompleto[:index(nomeCompleto, "[")]
+	if strings.Contains(nomeCompleto, "[") {
+		nomeBase = nomeCompleto[:strings.Index(nomeCompleto, "[")]
 	}
 
 	for i := len(t.escopos) - 1; i >= 0; i-- {
 
 		if entrada, ok := t.escopos[i][nomeBase]; ok {
 
-			// Campo de registro
-			if contains(nomeCompleto, ".") {
-				partes := split(nomeCompleto, ".")
+			if strings.Contains(nomeCompleto, ".") {
+
+				partes := strings.Split(nomeCompleto, ".")
+
 				if len(partes) < 2 {
 					return INVALIDO
 				}
@@ -308,30 +186,11 @@ func (t *TabelaDeSimbolos) Verificar(nomeCompleto string) TipoJander {
 				return INVALIDO
 			}
 
-			// Vetor
-			if contains(nomeCompleto, "[") {
-				if entrada.Dimensoes != nil {
-					return entrada.Tipo
-				}
-
-				return INVALIDO
-			}
-
 			return entrada.Tipo
 		}
 	}
 
 	return INVALIDO
-}
-
-func (t *TabelaDeSimbolos) ObterEntrada(nome string) *EntradaTabela {
-	for i := len(t.escopos) - 1; i >= 0; i-- {
-		if entrada, ok := t.escopos[i][nome]; ok {
-			return &entrada
-		}
-	}
-
-	return nil
 }
 
 func (t *TabelaDeSimbolos) ObterParametros(nome string) []TipoJander {
@@ -353,37 +212,55 @@ func (t *TabelaDeSimbolos) ObterTipoRetorno(nome string) TipoJander {
 
 	return INVALIDO
 }
+func (t *TabelaDeSimbolos) AdicionarConstante(
+	nome string,
+	tipo TipoJander,
+	valor interface{},
+) {
 
-// ================= HELPERS =================
+	escopoAtual := t.escopos[len(t.escopos)-1]
 
-// Essas helpers evitam importar strings em vários lugares.
-// Se preferir, pode substituir por strings.Contains/Split/Index.
-
-func contains(s, sub string) bool {
-	return index(s, sub) >= 0
+	escopoAtual[nome] = EntradaTabela{
+		Nome:           nome,
+		Tipo:           tipo,
+		ValorConstante: valor,
+	}
 }
 
-func index(s, sub string) int {
-	n := len(sub)
+func (t *TabelaDeSimbolos) AdicionarArray(
+	nome string,
+	tipo TipoJander,
+	dimensoes []int,
+) {
 
-	for i := 0; i+n <= len(s); i++ {
-		if s[i:i+n] == sub {
-			return i
+	escopoAtual := t.escopos[len(t.escopos)-1]
+
+	escopoAtual[nome] = EntradaTabela{
+		Nome:      nome,
+		Tipo:      tipo,
+		Dimensoes: dimensoes,
+	}
+}
+
+func (t *TabelaDeSimbolos) AdicionarCampoRegistro(
+	nomeRegistro string,
+	nomeCampo string,
+	tipoCampo TipoJander,
+) {
+
+	for i := len(t.escopos) - 1; i >= 0; i-- {
+
+		if entrada, ok := t.escopos[i][nomeRegistro]; ok {
+
+			if entrada.CamposRegistro == nil {
+				entrada.CamposRegistro = make(map[string]TipoJander)
+			}
+
+			entrada.CamposRegistro[nomeCampo] = tipoCampo
+
+			t.escopos[i][nomeRegistro] = entrada
+
+			return
 		}
-	}
-
-	return -1
-}
-
-func split(s, sep string) []string {
-	idx := index(s, sep)
-
-	if idx < 0 {
-		return []string{s}
-	}
-
-	return []string{
-		s[:idx],
-		s[idx+len(sep):],
 	}
 }
