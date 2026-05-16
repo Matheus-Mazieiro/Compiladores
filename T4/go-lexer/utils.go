@@ -39,19 +39,30 @@ func Compatibilidade(tipo1 TipoJander, tipo2 TipoJander) bool {
 		return true
 	}
 
+	// inteiro ↔ real
 	if (tipo1 == INTEIRO && tipo2 == REAL) ||
 		(tipo1 == REAL && tipo2 == INTEIRO) {
 		return true
 	}
 
+	// registros
 	if (tipo1 == REGISTRO || tipo1 == REGISTRO_TIPO) &&
 		(tipo2 == REGISTRO || tipo2 == REGISTRO_TIPO) {
 		return true
 	}
 
+	// ponteiros recebem endereço
+	if (tipo1 == PONTEIRO_INTEIRO ||
+		tipo1 == PONTEIRO_REAL ||
+		tipo1 == PONTEIRO_LITERAL ||
+		tipo1 == PONTEIRO_LOGICO) &&
+		tipo2 == ENDERECO {
+
+		return true
+	}
+
 	return false
 }
-
 func CompatibilidadeFuncao(tipo1 TipoJander, tipo2 TipoJander) bool {
 	return Compatibilidade(tipo1, tipo2)
 }
@@ -426,6 +437,19 @@ func VerificarParcelaNaoUnario(
 	}
 
 	if ctx.Identificador() != nil {
+
+		// &identificador
+		if ctx.ENDERECO() != nil {
+
+			nome := ctx.Identificador().GetText()
+
+			if !tabela.Existe(nome) {
+				return INVALIDO
+			}
+
+			return ENDERECO
+		}
+
 		return VerificarIdentificador(
 			tabela,
 			ctx.Identificador(),
