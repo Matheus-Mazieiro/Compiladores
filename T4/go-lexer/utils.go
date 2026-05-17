@@ -120,26 +120,43 @@ func VerificarTipo(tabela *TabelaDeSimbolos, ctx parser.ITipoContext) TipoJander
 	return INVALIDO
 }
 
-func VerificarTipoEstendido(tabela *TabelaDeSimbolos, ctx parser.ITipo_estendidoContext) TipoJander {
+func VerificarTipoEstendido(
+	tabela *TabelaDeSimbolos,
+	ctx parser.ITipo_estendidoContext,
+) TipoJander {
+
 	if ctx == nil {
 		return INVALIDO
 	}
 
-	base := VerificarTipoBasicoIdent(tabela, ctx.Tipo_basico_ident())
+	base := VerificarTipoBasicoIdent(
+		tabela,
+		ctx.Tipo_basico_ident(),
+	)
 
 	texto := ctx.GetText()
 
 	if len(texto) > 0 && texto[0] == '^' {
+
 		switch base {
+
 		case INTEIRO:
 			return PONTEIRO_INTEIRO
+
 		case REAL:
 			return PONTEIRO_REAL
+
 		case LITERAL:
 			return PONTEIRO_LITERAL
+
 		case LOGICO:
 			return PONTEIRO_LOGICO
 		}
+	}
+
+	// CORREÇÃO
+	if base == REGISTRO_TIPO {
+		return REGISTRO
 	}
 
 	return base
@@ -159,7 +176,9 @@ func VerificarTipoBasicoIdent(tabela *TabelaDeSimbolos, ctx parser.ITipo_basico_
 
 		nome := ctx.IDENT().GetText()
 
-		if !tabela.Existe(nome) {
+		_, ok := tabela.ObterEntrada(nome)
+
+		if !ok {
 
 			if !tiposComErro[nome] {
 

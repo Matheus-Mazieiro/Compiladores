@@ -150,60 +150,82 @@ func (j *JanderSemantico) VisitDeclaracao_local(ctx *parser.Declaracao_localCont
 }
 
 // ================= FUNÇÕES / PROCEDIMENTOS =================
-func (j *JanderSemantico) VisitVariavel(ctx *parser.VariavelContext) interface{} {
+func (j *JanderSemantico) VisitVariavel(
+	ctx *parser.VariavelContext,
+) interface{} {
+
 	tipo := VerificarTipo(j.tabela, ctx.Tipo())
 
+	var nomeTipo string
+
+	// pega o nome do tipo declarado
+	if ctx.Tipo().Tipo_estendido() != nil {
+
+		tb := ctx.Tipo().Tipo_estendido().Tipo_basico_ident()
+
+		if tb != nil && tb.IDENT() != nil {
+			nomeTipo = tb.IDENT().GetText()
+		}
+	}
+
 	for _, ident := range ctx.AllIdentificador() {
+
 		nome := ident.IDENT(0).GetText()
 
-		// CORREÇÃO: Só dá erro se já existir no escopo atual, ou se o símbolo global NÃO for um REGISTRO_TIPO
+		// redeclaração no escopo atual
 		if j.tabela.ExisteNoEscopoAtual(nome) {
+
 			AdicionarErroSemantico(
 				ident.GetStart().GetLine(),
 				"identificador "+nome+" ja declarado anteriormente",
 			)
+
 			continue
 		}
 
-		// Se existe globalmente, verifica se não é apenas a definição do tipo estruturado
-		if len(j.tabela.escopos) > 1 && j.tabela.Existe(nome) {
-			if j.tabela.Verificar(nome) != REGISTRO_TIPO {
-				AdicionarErroSemantico(
-					ident.GetStart().GetLine(),
-					"identificador "+nome+" ja declarado anteriormente",
-				)
-				continue
-			}
-		}
-
 		j.tabela.Adicionar(nome, tipo)
-		// ... restante do código do VisitVariavel continua igual ...
 
-		// copia campos de tipo registro
-		if ctx.Tipo().Tipo_estendido() != nil {
-			tb := ctx.Tipo().Tipo_estendido().Tipo_basico_ident()
-			if tb != nil && tb.IDENT() != nil {
-				nomeTipo := tb.IDENT().GetText()
-				for i := len(j.tabela.escopos) - 1; i >= 0; i-- {
-					if entradaTipo, ok := j.tabela.escopos[i][nomeTipo]; ok {
-						if entradaTipo.CamposRegistro != nil {
-							for campo, tipoCampo := range entradaTipo.CamposRegistro {
-								j.tabela.AdicionarCampoRegistro(nome, campo, tipoCampo)
-							}
-						}
-						break
-					}
+		// ================================
+		// COPIA CAMPOS DO TIPO REGISTRO
+		// ================================
+		if nomeTipo != "" {
+
+			entradaTipo, ok := j.tabela.ObterEntrada(nomeTipo)
+
+			if ok {
+
+				for campo, tipoCampo := range entradaTipo.CamposRegistro {
+
+					j.tabela.AdicionarCampoRegistro(
+						nome,
+						campo,
+						tipoCampo,
+					)
 				}
 			}
 		}
 
-		// registro inline
+		// ================================
+		// REGISTRO INLINE
+		// ================================
 		if ctx.Tipo().Registro() != nil {
+
 			for _, campo := range ctx.Tipo().Registro().AllVariavel() {
-				tipoCampo := VerificarTipo(j.tabela, campo.Tipo())
+
+				tipoCampo := VerificarTipo(
+					j.tabela,
+					campo.Tipo(),
+				)
+
 				for _, idCampo := range campo.AllIdentificador() {
+
 					nomeCampo := idCampo.IDENT(0).GetText()
-					j.tabela.AdicionarCampoRegistro(nome, nomeCampo, tipoCampo)
+
+					j.tabela.AdicionarCampoRegistro(
+						nome,
+						nomeCampo,
+						tipoCampo,
+					)
 				}
 			}
 		}
@@ -248,6 +270,7 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 	}
 
 	// procedimento
+	// procedimento
 	if ctx.PROCEDIMENTO() != nil {
 
 		j.tabela.AdicionarFuncao(
@@ -258,21 +281,28 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 
 		j.tabela.NovoEscopo(false)
 
+		// adiciona parâmetros
 		if ctx.Parametros() != nil {
-			ctx.Parametros().Accept(j)
+
+			for _, p := range ctx.Parametros().AllParametro() {
+
+				j.VisitParametro(
+					p.(*parser.ParametroContext),
+				)
+			}
 		}
 
+		// declarações locais
 		for _, d := range ctx.AllDeclaracao_local() {
 			d.Accept(j)
 		}
 
+		// comandos
 		for _, c := range ctx.AllCmd() {
 			c.Accept(j)
 		}
 
 		j.tabela.AbandonarEscopo()
-
-		return nil
 	}
 
 	// função
@@ -292,14 +322,23 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 		j.tabela.NovoEscopo(true)
 		j.tabela.SetTipoRetornoFuncaoAtual(tipoRetorno)
 
+		// parâmetros
 		if ctx.Parametros() != nil {
-			ctx.Parametros().Accept(j)
+
+			for _, p := range ctx.Parametros().AllParametro() {
+
+				j.VisitParametro(
+					p.(*parser.ParametroContext),
+				)
+			}
 		}
 
+		// declarações locais
 		for _, d := range ctx.AllDeclaracao_local() {
 			d.Accept(j)
 		}
 
+		// comandos
 		for _, c := range ctx.AllCmd() {
 			c.Accept(j)
 		}
@@ -308,6 +347,7 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 	}
 
 	return nil
+
 }
 
 func (j *JanderSemantico) VisitParametro(
@@ -319,21 +359,33 @@ func (j *JanderSemantico) VisitParametro(
 		ctx.Tipo_estendido(),
 	)
 
-	var nomeTipo string
+	var entradaTipo EntradaTabela
+	var temRegistro bool
 
+	// pega typedef ANTES de adicionar variável
 	tb := ctx.Tipo_estendido().Tipo_basico_ident()
 
 	if tb != nil && tb.IDENT() != nil {
-		nomeTipo = tb.IDENT().GetText()
+
+		nomeTipo := tb.IDENT().GetText()
+
+		entrada, ok := j.tabela.ObterEntrada(nomeTipo)
+
+		if ok {
+
+			if entrada.CamposRegistro != nil {
+
+				entradaTipo = entrada
+				temRegistro = true
+			}
+		}
 	}
 
 	for _, ident := range ctx.AllIdentificador() {
 
 		nome := ident.IDENT(0).GetText()
 
-		escopoAtual := j.tabela.escopos[len(j.tabela.escopos)-1]
-
-		if _, ok := escopoAtual[nome]; ok {
+		if j.tabela.ExisteNoEscopoAtual(nome) {
 
 			AdicionarErroSemantico(
 				ident.GetStart().GetLine(),
@@ -344,28 +396,30 @@ func (j *JanderSemantico) VisitParametro(
 		}
 
 		j.tabela.Adicionar(nome, tipo)
+		println("PARAMETRO ADICIONADO:", nome)
 
+		entrada, ok := j.tabela.ObterEntrada(nome)
+
+		if ok {
+
+			println("Campos do parametro:")
+
+			for campo := range entrada.CamposRegistro {
+				println(" ->", campo)
+			}
+		} else {
+			println("NAO ACHOU PARAMETRO")
+		}
 		// copia campos do registro
-		if nomeTipo != "" {
+		if temRegistro {
 
-			for i := len(j.tabela.escopos) - 1; i >= 0; i-- {
+			for campo, tipoCampo := range entradaTipo.CamposRegistro {
 
-				if entradaTipo, ok := j.tabela.escopos[i][nomeTipo]; ok {
-
-					if entradaTipo.CamposRegistro != nil {
-
-						for campo, tipoCampo := range entradaTipo.CamposRegistro {
-
-							j.tabela.AdicionarCampoRegistro(
-								nome,
-								campo,
-								tipoCampo,
-							)
-						}
-					}
-
-					break
-				}
+				j.tabela.AdicionarCampoRegistro(
+					nome,
+					campo,
+					tipoCampo,
+				)
 			}
 		}
 	}
@@ -492,38 +546,50 @@ func (j *JanderSemantico) VisitCmdEnquanto(
 	return nil
 }
 
-func (j *JanderSemantico) VisitCmdAtribuicao(ctx *parser.CmdAtribuicaoContext) interface{} {
+func (j *JanderSemantico) VisitCmdAtribuicao(
+	ctx *parser.CmdAtribuicaoContext,
+) interface{} {
+
 	nomeBruto := ctx.Identificador().GetText()
-	nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
 
 	nomeErro := nomeBruto
+
 	if ctx.PONTEIRO() != nil {
 		nomeErro = "^" + nomeBruto
 	}
 
-	if !j.tabela.Existe(nomeBase) {
-		if !ErroJaReportado(nomeBase) {
+	// verifica identificador COMPLETO
+	if !j.tabela.Existe(nomeBruto) {
+
+		if !ErroJaReportado(nomeBruto) {
+
 			AdicionarErroSemantico(
 				ctx.Identificador().GetStart().GetLine(),
 				"identificador "+nomeBruto+" nao declarado",
 			)
 		}
+
 		return nil
 	}
 
-	tipoVar := j.tabela.Verificar(nomeBase)
+	tipoVar := j.tabela.Verificar(nomeBruto)
 
 	// desreferenciamento
 	if ctx.PONTEIRO() != nil {
+
 		switch tipoVar {
 		case PONTEIRO_INTEIRO:
 			tipoVar = INTEIRO
+
 		case PONTEIRO_REAL:
 			tipoVar = REAL
+
 		case PONTEIRO_LITERAL:
 			tipoVar = LITERAL
+
 		case PONTEIRO_LOGICO:
 			tipoVar = LOGICO
+
 		default:
 			tipoVar = INVALIDO
 		}
@@ -532,6 +598,7 @@ func (j *JanderSemantico) VisitCmdAtribuicao(ctx *parser.CmdAtribuicaoContext) i
 	tipoExpr := j.tipoExpressao(ctx.Expressao())
 
 	if !Compatibilidade(tipoVar, tipoExpr) {
+
 		AdicionarErroSemantico(
 			ctx.Identificador().GetStart().GetLine(),
 			"atribuicao nao compativel para "+nomeErro,
@@ -890,7 +957,7 @@ func (j *JanderSemantico) checkIdentificadores(t antlr.Tree) {
 		nomeBruto := ident.GetText()
 		nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
 
-		if !j.tabela.Existe(nomeBase) {
+		if !j.tabela.Existe(nomeBruto) {
 			if !ErroJaReportado(nomeBase) {
 				AdicionarErroSemantico(
 					ident.GetStart().GetLine(),
