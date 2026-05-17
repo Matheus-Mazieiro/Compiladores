@@ -3,6 +3,7 @@ package main
 
 import (
 	parser "go-lexer/parser"
+	"strings"
 
 	"github.com/antlr4-go/antlr/v4"
 )
@@ -148,57 +149,61 @@ func (j *JanderSemantico) VisitDeclaracao_local(ctx *parser.Declaracao_localCont
 	return nil
 }
 
+// ================= FUNÇÕES / PROCEDIMENTOS =================
 func (j *JanderSemantico) VisitVariavel(ctx *parser.VariavelContext) interface{} {
-
 	tipo := VerificarTipo(j.tabela, ctx.Tipo())
 
 	for _, ident := range ctx.AllIdentificador() {
-
 		nome := ident.IDENT(0).GetText()
 
-		if j.tabela.Existe(nome) {
-
+		// CORREÇÃO: Só dá erro se já existir no escopo atual, ou se o símbolo global NÃO for um REGISTRO_TIPO
+		if j.tabela.ExisteNoEscopoAtual(nome) {
 			AdicionarErroSemantico(
 				ident.GetStart().GetLine(),
 				"identificador "+nome+" ja declarado anteriormente",
 			)
-
 			continue
 		}
 
-		// array
-		if ident.Dimensao() != nil &&
-			len(ident.Dimensao().AllExp_aritmetica()) > 0 {
-
-			var dimensoes []int
-
-			for range ident.Dimensao().AllExp_aritmetica() {
-				dimensoes = append(dimensoes, 0)
+		// Se existe globalmente, verifica se não é apenas a definição do tipo estruturado
+		if len(j.tabela.escopos) > 1 && j.tabela.Existe(nome) {
+			if j.tabela.Verificar(nome) != REGISTRO_TIPO {
+				AdicionarErroSemantico(
+					ident.GetStart().GetLine(),
+					"identificador "+nome+" ja declarado anteriormente",
+				)
+				continue
 			}
+		}
 
-			j.tabela.AdicionarArray(nome, tipo, dimensoes)
+		j.tabela.Adicionar(nome, tipo)
+		// ... restante do código do VisitVariavel continua igual ...
 
-		} else {
-
-			j.tabela.Adicionar(nome, tipo)
+		// copia campos de tipo registro
+		if ctx.Tipo().Tipo_estendido() != nil {
+			tb := ctx.Tipo().Tipo_estendido().Tipo_basico_ident()
+			if tb != nil && tb.IDENT() != nil {
+				nomeTipo := tb.IDENT().GetText()
+				for i := len(j.tabela.escopos) - 1; i >= 0; i-- {
+					if entradaTipo, ok := j.tabela.escopos[i][nomeTipo]; ok {
+						if entradaTipo.CamposRegistro != nil {
+							for campo, tipoCampo := range entradaTipo.CamposRegistro {
+								j.tabela.AdicionarCampoRegistro(nome, campo, tipoCampo)
+							}
+						}
+						break
+					}
+				}
+			}
 		}
 
 		// registro inline
 		if ctx.Tipo().Registro() != nil {
-
 			for _, campo := range ctx.Tipo().Registro().AllVariavel() {
-
 				tipoCampo := VerificarTipo(j.tabela, campo.Tipo())
-
 				for _, idCampo := range campo.AllIdentificador() {
-
 					nomeCampo := idCampo.IDENT(0).GetText()
-
-					j.tabela.AdicionarCampoRegistro(
-						nome,
-						nomeCampo,
-						tipoCampo,
-					)
+					j.tabela.AdicionarCampoRegistro(nome, nomeCampo, tipoCampo)
 				}
 			}
 		}
@@ -207,15 +212,15 @@ func (j *JanderSemantico) VisitVariavel(ctx *parser.VariavelContext) interface{}
 	return nil
 }
 
-// ================= FUNÇÕES / PROCEDIMENTOS =================
-
 func (j *JanderSemantico) VisitDeclaracao_global(
 	ctx *parser.Declaracao_globalContext,
 ) interface{} {
 
 	nome := ctx.IDENT().GetText()
 
-	if j.tabela.Existe(nome) {
+	escopoAtual := j.tabela.escopos[len(j.tabela.escopos)-1]
+
+	if _, ok := escopoAtual[nome]; ok {
 
 		AdicionarErroSemantico(
 			ctx.IDENT().GetSymbol().GetLine(),
@@ -314,11 +319,21 @@ func (j *JanderSemantico) VisitParametro(
 		ctx.Tipo_estendido(),
 	)
 
+	var nomeTipo string
+
+	tb := ctx.Tipo_estendido().Tipo_basico_ident()
+
+	if tb != nil && tb.IDENT() != nil {
+		nomeTipo = tb.IDENT().GetText()
+	}
+
 	for _, ident := range ctx.AllIdentificador() {
 
-		nome := ident.GetText()
+		nome := ident.IDENT(0).GetText()
 
-		if j.tabela.Existe(nome) {
+		escopoAtual := j.tabela.escopos[len(j.tabela.escopos)-1]
+
+		if _, ok := escopoAtual[nome]; ok {
 
 			AdicionarErroSemantico(
 				ident.GetStart().GetLine(),
@@ -329,6 +344,30 @@ func (j *JanderSemantico) VisitParametro(
 		}
 
 		j.tabela.Adicionar(nome, tipo)
+
+		// copia campos do registro
+		if nomeTipo != "" {
+
+			for i := len(j.tabela.escopos) - 1; i >= 0; i-- {
+
+				if entradaTipo, ok := j.tabela.escopos[i][nomeTipo]; ok {
+
+					if entradaTipo.CamposRegistro != nil {
+
+						for campo, tipoCampo := range entradaTipo.CamposRegistro {
+
+							j.tabela.AdicionarCampoRegistro(
+								nome,
+								campo,
+								tipoCampo,
+							)
+						}
+					}
+
+					break
+				}
+			}
+		}
 	}
 
 	return nil
@@ -453,49 +492,38 @@ func (j *JanderSemantico) VisitCmdEnquanto(
 	return nil
 }
 
-func (j *JanderSemantico) VisitCmdAtribuicao(
-	ctx *parser.CmdAtribuicaoContext,
-) interface{} {
+func (j *JanderSemantico) VisitCmdAtribuicao(ctx *parser.CmdAtribuicaoContext) interface{} {
+	nomeBruto := ctx.Identificador().GetText()
+	nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
 
-	nome := ctx.Identificador().GetText()
-	nomeErro := nome
-
+	nomeErro := nomeBruto
 	if ctx.PONTEIRO() != nil {
-		nomeErro = "^" + nome
+		nomeErro = "^" + nomeBruto
 	}
 
-	if !j.tabela.Existe(nome) {
-
-		if !ErroJaReportado(nome) {
-
+	if !j.tabela.Existe(nomeBase) {
+		if !ErroJaReportado(nomeBase) {
 			AdicionarErroSemantico(
 				ctx.Identificador().GetStart().GetLine(),
-				"identificador "+nome+" nao declarado",
+				"identificador "+nomeBruto+" nao declarado",
 			)
 		}
-
 		return nil
 	}
 
-	tipoVar := j.tabela.Verificar(nome)
+	tipoVar := j.tabela.Verificar(nomeBase)
 
 	// desreferenciamento
 	if ctx.PONTEIRO() != nil {
-
 		switch tipoVar {
-
 		case PONTEIRO_INTEIRO:
 			tipoVar = INTEIRO
-
 		case PONTEIRO_REAL:
 			tipoVar = REAL
-
 		case PONTEIRO_LITERAL:
 			tipoVar = LITERAL
-
 		case PONTEIRO_LOGICO:
 			tipoVar = LOGICO
-
 		default:
 			tipoVar = INVALIDO
 		}
@@ -504,7 +532,6 @@ func (j *JanderSemantico) VisitCmdAtribuicao(
 	tipoExpr := j.tipoExpressao(ctx.Expressao())
 
 	if !Compatibilidade(tipoVar, tipoExpr) {
-
 		AdicionarErroSemantico(
 			ctx.Identificador().GetStart().GetLine(),
 			"atribuicao nao compativel para "+nomeErro,
@@ -513,7 +540,6 @@ func (j *JanderSemantico) VisitCmdAtribuicao(
 
 	return nil
 }
-
 func (j *JanderSemantico) VisitCmdChamada(
 	ctx *parser.CmdChamadaContext,
 ) interface{} {
@@ -739,10 +765,7 @@ func (j *JanderSemantico) tipoParcela(
 	)
 }
 
-func (j *JanderSemantico) tipoParcelaUnario(
-	ctx parser.IParcela_unarioContext,
-) TipoJander {
-
+func (j *JanderSemantico) tipoParcelaUnario(ctx parser.IParcela_unarioContext) TipoJander {
 	if ctx.NUM_INT() != nil {
 		return INTEIRO
 	}
@@ -751,108 +774,130 @@ func (j *JanderSemantico) tipoParcelaUnario(
 		return REAL
 	}
 
+	// Dentro de tipoParcelaUnario:
 	if ctx.Identificador() != nil {
+		nomeBruto := ctx.Identificador().GetText()
+		nomeBase := extrairNomeBase(nomeBruto)
 
-		nome := ctx.Identificador().GetText()
-
-		if !j.tabela.Existe(nome) {
-
-			if !ErroJaReportado(nome) {
-
+		if !j.tabela.Existe(nomeBruto) { // Valida usando a string completa modificada
+			if !ErroJaReportado(nomeBase) {
 				AdicionarErroSemantico(
 					ctx.GetStart().GetLine(),
-					"identificador "+nome+" nao declarado",
+					"identificador "+nomeBruto+" nao declarado",
 				)
 			}
-
 			return INVALIDO
 		}
+		return j.tabela.Verificar(nomeBruto) // Garante o retorno do tipo do campo (.preco)
+	}
 
-		return j.tabela.Verificar(nome)
+	// Dentro de tipoParcelaNaoUnario:
+	if ctx.Identificador() != nil {
+		nomeBruto := ctx.Identificador().GetText()
+		nomeBase := extrairNomeBase(nomeBruto)
+
+		if !j.tabela.Existe(nomeBruto) {
+			if !ErroJaReportado(nomeBase) {
+				AdicionarErroSemantico(
+					ctx.GetStart().GetLine(),
+					"identificador "+nomeBruto+" nao declarado",
+				)
+			}
+			return INVALIDO
+		}
+		return j.tabela.Verificar(nomeBruto)
+	}
+
+	if ctx.Identificador() != nil {
+		nomeBruto := ctx.Identificador().GetText()
+		nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
+
+		if !j.tabela.Existe(nomeBase) {
+			if !ErroJaReportado(nomeBase) {
+				AdicionarErroSemantico(
+					ctx.GetStart().GetLine(),
+					"identificador "+nomeBruto+" nao declarado",
+				)
+			}
+			return INVALIDO
+		}
+		return j.tabela.Verificar(nomeBruto) // Passa nomeBruto para a tabela resolver internamente os subcampos
 	}
 
 	if len(ctx.AllExpressao()) > 0 {
-		return j.tipoExpressao(
-			ctx.Expressao(0),
-		)
+		return j.tipoExpressao(ctx.Expressao(0))
 	}
 
-	// chamada de função
 	if ctx.IDENT() != nil {
-
 		nome := ctx.IDENT().GetText()
-
 		if !j.tabela.Existe(nome) {
-
 			if !ErroJaReportado(nome) {
-
 				AdicionarErroSemantico(
 					ctx.GetStart().GetLine(),
 					"identificador "+nome+" nao declarado",
 				)
 			}
-
 			return INVALIDO
 		}
-
 		return j.tabela.ObterTipoRetorno(nome)
 	}
 
 	return INVALIDO
 }
 
-func (j *JanderSemantico) tipoParcelaNaoUnario(
-	ctx parser.IParcela_nao_unarioContext,
-) TipoJander {
-
+func (j *JanderSemantico) tipoParcelaNaoUnario(ctx parser.IParcela_nao_unarioContext) TipoJander {
 	if ctx.CADEIA() != nil {
 		return LITERAL
 	}
-
 	if ctx.Identificador() != nil {
+		nomeBruto := ctx.Identificador().GetText()
+		nomeBase := extrairNomeBase(nomeBruto)
 
-		nome := ctx.Identificador().GetText()
-
-		if !j.tabela.Existe(nome) {
-
-			if !ErroJaReportado(nome) {
-
+		if !j.tabela.Existe(nomeBruto) {
+			if !ErroJaReportado(nomeBase) {
 				AdicionarErroSemantico(
 					ctx.GetStart().GetLine(),
-					"identificador "+nome+" nao declarado",
+					"identificador "+nomeBruto+" nao declarado",
 				)
 			}
-
 			return INVALIDO
 		}
+		return j.tabela.Verificar(nomeBruto)
+	}
 
-		return j.tabela.Verificar(nome)
+	if ctx.Identificador() != nil {
+		nomeBruto := ctx.Identificador().GetText()
+		nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
+
+		if !j.tabela.Existe(nomeBase) {
+			if !ErroJaReportado(nomeBase) {
+				AdicionarErroSemantico(
+					ctx.GetStart().GetLine(),
+					"identificador "+nomeBruto+" nao declarado",
+				)
+			}
+			return INVALIDO
+		}
+		return j.tabela.Verificar(nomeBruto)
 	}
 
 	return INVALIDO
 }
 
 // ================= HELPERS =================
-
-func (j *JanderSemantico) checkIdentificadores(
-	t antlr.Tree,
-) {
-
+func (j *JanderSemantico) checkIdentificadores(t antlr.Tree) {
 	if ident, ok := t.(parser.IIdentificadorContext); ok {
+		nomeBruto := ident.GetText()
+		nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
 
-		nome := ident.GetText()
-
-		if !j.tabela.Existe(nome) {
-
-			if !ErroJaReportado(nome) {
-
+		if !j.tabela.Existe(nomeBase) {
+			if !ErroJaReportado(nomeBase) {
 				AdicionarErroSemantico(
 					ident.GetStart().GetLine(),
-					"identificador "+nome+" nao declarado",
+					"identificador "+nomeBruto+" nao declarado",
 				)
 			}
 		}
-
 		return
 	}
 
@@ -861,22 +906,26 @@ func (j *JanderSemantico) checkIdentificadores(
 	}
 }
 
-func (j *JanderSemantico) VisitIdentificador(
-	ctx *parser.IdentificadorContext,
-) interface{} {
+func (j *JanderSemantico) VisitIdentificador(ctx *parser.IdentificadorContext) interface{} {
+	nomeBruto := ctx.GetText()
+	nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
 
-	nome := ctx.GetText()
-
-	if !j.tabela.Existe(nome) {
-
-		if !ErroJaReportado(nome) {
-
+	if !j.tabela.Existe(nomeBase) {
+		if !ErroJaReportado(nomeBase) {
 			AdicionarErroSemantico(
 				ctx.GetStart().GetLine(),
-				"identificador "+nome+" nao declarado",
+				"identificador "+nomeBruto+" nao declarado",
 			)
 		}
 	}
-
 	return nil
+}
+func extrairNomeBase(nomeCompleto string) string {
+	if idxPonto := strings.Index(nomeCompleto, "."); idxPonto != -1 {
+		nomeCompleto = nomeCompleto[:idxPonto]
+	}
+	if idxColchete := strings.Index(nomeCompleto, "["); idxColchete != -1 {
+		nomeCompleto = nomeCompleto[:idxColchete]
+	}
+	return strings.ReplaceAll(nomeCompleto, "^", "")
 }

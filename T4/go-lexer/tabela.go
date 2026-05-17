@@ -4,6 +4,10 @@ import "strings"
 
 type TipoJander int
 
+func normalizar(nome string) string {
+	return nome
+}
+
 const (
 	INTEIRO TipoJander = iota
 	REAL
@@ -78,6 +82,8 @@ func (t *TabelaDeSimbolos) Adicionar(nome string, tipo TipoJander) {
 
 	escopoAtual := t.escopos[len(t.escopos)-1]
 
+	//nome = normalizar(nome)
+
 	entrada := EntradaTabela{
 		Nome: nome,
 		Tipo: tipo,
@@ -109,90 +115,89 @@ func (t *TabelaDeSimbolos) AdicionarFuncao(nome string, tipoRetorno TipoJander, 
 }
 
 func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
-
-	nomeBase := nomeCompleto
-
-	if strings.Contains(nomeCompleto, ".") {
-		partes := strings.Split(nomeCompleto, ".")
-		nomeBase = partes[0]
-	}
-
+	nomeLimpo := nomeCompleto
 	if strings.Contains(nomeCompleto, "[") {
-		nomeBase = nomeCompleto[:strings.Index(nomeCompleto, "[")]
-	}
-
-	for i := len(t.escopos) - 1; i >= 0; i-- {
-
-		if entrada, ok := t.escopos[i][nomeBase]; ok {
-
-			if strings.Contains(nomeCompleto, ".") {
-
-				partes := strings.Split(nomeCompleto, ".")
-
-				if len(partes) < 2 {
-					return false
-				}
-
-				campo := partes[1]
-
-				if entrada.CamposRegistro != nil {
-					_, ok := entrada.CamposRegistro[campo]
-					return ok
-				}
-
-				return false
-			}
-
-			return true
+		idxAbre := strings.Index(nomeCompleto, "[")
+		idxFecha := strings.LastIndex(nomeCompleto, "]")
+		if idxFecha > idxAbre {
+			nomeLimpo = nomeCompleto[:idxAbre] + nomeCompleto[idxFecha+1:]
 		}
 	}
 
+	nomeBase := nomeLimpo
+	if strings.Contains(nomeLimpo, ".") {
+		nomeBase = strings.Split(nomeLimpo, ".")[0]
+	}
+
+	// Força a busca da variável base em minúsculo para evitar o erro da linha 28
+	nomeBaseBusca := strings.ToLower(nomeBase)
+
+	for i := len(t.escopos) - 1; i >= 0; i-- {
+		// Varre o escopo testando as chaves em LowerCase
+		for k, entrada := range t.escopos[i] {
+			if strings.ToLower(k) == nomeBaseBusca {
+
+				if strings.Contains(nomeLimpo, ".") {
+					partes := strings.Split(nomeLimpo, ".")
+					if len(partes) < 2 {
+						return false
+					}
+					campo := partes[1]
+
+					if entrada.CamposRegistro != nil {
+						_, existeCampo := entrada.CamposRegistro[campo]
+						return existeCampo
+					}
+					return false
+				}
+				return true
+			}
+		}
+	}
 	return false
 }
 
 func (t *TabelaDeSimbolos) Verificar(nomeCompleto string) TipoJander {
-
-	nomeBase := nomeCompleto
-
-	if strings.Contains(nomeCompleto, ".") {
-		partes := strings.Split(nomeCompleto, ".")
-		nomeBase = partes[0]
-	}
-
+	nomeLimpo := nomeCompleto
 	if strings.Contains(nomeCompleto, "[") {
-		nomeBase = nomeCompleto[:strings.Index(nomeCompleto, "[")]
-	}
-
-	for i := len(t.escopos) - 1; i >= 0; i-- {
-
-		if entrada, ok := t.escopos[i][nomeBase]; ok {
-
-			if strings.Contains(nomeCompleto, ".") {
-
-				partes := strings.Split(nomeCompleto, ".")
-
-				if len(partes) < 2 {
-					return INVALIDO
-				}
-
-				campo := partes[1]
-
-				if entrada.CamposRegistro != nil {
-					if tipoCampo, ok := entrada.CamposRegistro[campo]; ok {
-						return tipoCampo
-					}
-				}
-
-				return INVALIDO
-			}
-
-			return entrada.Tipo
+		idxAbre := strings.Index(nomeCompleto, "[")
+		idxFecha := strings.LastIndex(nomeCompleto, "]")
+		if idxFecha > idxAbre {
+			nomeLimpo = nomeCompleto[:idxAbre] + nomeCompleto[idxFecha+1:]
 		}
 	}
 
+	nomeBase := nomeLimpo
+	if strings.Contains(nomeLimpo, ".") {
+		nomeBase = strings.Split(nomeLimpo, ".")[0]
+	}
+
+	nomeBaseBusca := strings.ToLower(nomeBase)
+
+	for i := len(t.escopos) - 1; i >= 0; i-- {
+		for k, entrada := range t.escopos[i] {
+			if strings.ToLower(k) == nomeBaseBusca {
+
+				if strings.Contains(nomeLimpo, ".") {
+					partes := strings.Split(nomeLimpo, ".")
+					if len(partes) < 2 {
+						return INVALIDO
+					}
+					campo := partes[1]
+
+					if entrada.CamposRegistro != nil {
+						if tipoCampo, existeCampo := entrada.CamposRegistro[campo]; existeCampo {
+							return tipoCampo
+						}
+					}
+					return INVALIDO
+				}
+				return entrada.Tipo
+			}
+		}
+	}
 	return INVALIDO
 }
-
 func (t *TabelaDeSimbolos) ObterParametros(nome string) []TipoJander {
 	for i := len(t.escopos) - 1; i >= 0; i-- {
 		if entrada, ok := t.escopos[i][nome]; ok {
@@ -244,9 +249,12 @@ func (t *TabelaDeSimbolos) AdicionarArray(
 
 func (t *TabelaDeSimbolos) AdicionarCampoRegistro(
 	nomeRegistro string,
-	nomeCampo string,
-	tipoCampo TipoJander,
+	campo string,
+	tipo TipoJander,
 ) {
+
+	//nomeRegistro = normalizar(nomeRegistro)
+	//campo = normalizar(campo)
 
 	for i := len(t.escopos) - 1; i >= 0; i-- {
 
@@ -256,11 +264,40 @@ func (t *TabelaDeSimbolos) AdicionarCampoRegistro(
 				entrada.CamposRegistro = make(map[string]TipoJander)
 			}
 
-			entrada.CamposRegistro[nomeCampo] = tipoCampo
-
+			entrada.CamposRegistro[campo] = tipo
 			t.escopos[i][nomeRegistro] = entrada
-
 			return
 		}
 	}
+}
+
+// Verifica se um identificador já existe estritamente no escopo atual (topo da pilha)
+func (t *TabelaDeSimbolos) ExisteNoEscopoAtual(nome string) bool {
+	if len(t.escopos) == 0 {
+		return false
+	}
+	_, existe := t.escopos[len(t.escopos)-1][nome]
+	return existe
+}
+
+// Retorna a quantidade de parâmetros formais que uma função possui
+func (t *TabelaDeSimbolos) ObterQtdParametros(nome string) int {
+	for i := len(t.escopos) - 1; i >= 0; i-- {
+		if entrada, ok := t.escopos[i][nome]; ok {
+			return len(entrada.Parametros)
+		}
+	}
+	return 0
+}
+
+// Retorna o tipo do parâmetro em uma posição específica (índice)
+func (t *TabelaDeSimbolos) ObterTipoParametroIdx(nome string, idx int) TipoJander {
+	for i := len(t.escopos) - 1; i >= 0; i-- {
+		if entrada, ok := t.escopos[i][nome]; ok {
+			if idx >= 0 && idx < len(entrada.Parametros) {
+				return entrada.Parametros[idx]
+			}
+		}
+	}
+	return INVALIDO
 }
