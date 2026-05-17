@@ -431,31 +431,42 @@ func (j *JanderSemantico) VisitParametro(
 
 func (j *JanderSemantico) VisitCmd(ctx *parser.CmdContext) interface{} {
 
+	println("ENTROU EM CMD")
+
 	if ctx.CmdLeia() != nil {
+		println("ACHOU CMDLEIA")
 		return ctx.CmdLeia().Accept(j)
 	}
 
 	if ctx.CmdEscreva() != nil {
+		println("ACHOU CMDESCREVA")
 		return ctx.CmdEscreva().Accept(j)
 	}
-
+	if ctx.CmdFaca() != nil {
+		return ctx.CmdFaca().Accept(j)
+	}
 	if ctx.CmdSe() != nil {
+		println("ACHOU CMDSE")
 		return ctx.CmdSe().Accept(j)
 	}
 
 	if ctx.CmdEnquanto() != nil {
+		println("ACHOU CMDENQUANTO")
 		return ctx.CmdEnquanto().Accept(j)
 	}
 
 	if ctx.CmdAtribuicao() != nil {
+		println("ACHOU CMDATRIB")
 		return ctx.CmdAtribuicao().Accept(j)
 	}
 
 	if ctx.CmdChamada() != nil {
+		println("ACHOU CMDCHAMADA")
 		return ctx.CmdChamada().Accept(j)
 	}
 
 	if ctx.CmdRetorne() != nil {
+		println("ACHOU CMDRETORNE")
 		return ctx.CmdRetorne().Accept(j)
 	}
 
@@ -466,11 +477,21 @@ func (j *JanderSemantico) VisitCmdLeia(
 	ctx *parser.CmdLeiaContext,
 ) interface{} {
 
+	println("===== CMD LEIA =====")
+
 	for _, ident := range ctx.AllIdentificador() {
 
 		nome := ident.GetText()
 
-		if !j.tabela.Existe(nome) {
+		println("LEIA IDENT:", nome)
+
+		existe := j.tabela.Existe(nome)
+
+		println("EXISTE?", existe)
+
+		if !existe {
+
+			println(">>> VAI REPORTAR ERRO")
 
 			if !ErroJaReportado(nome) {
 
@@ -481,10 +502,33 @@ func (j *JanderSemantico) VisitCmdLeia(
 			}
 		}
 	}
+	println("QTD IDENT:", len(ctx.AllIdentificador()))
+	return nil
+}
+func (j *JanderSemantico) VisitCmdFaca(
+	ctx *parser.CmdFacaContext,
+) interface{} {
+
+	for _, c := range ctx.AllCmd() {
+		c.Accept(j)
+	}
+
+	if ctx.Expressao() != nil {
+
+		tipo := j.tipoExpressao(ctx.Expressao())
+
+		if tipo != LOGICO &&
+			tipo != INVALIDO {
+
+			AdicionarErroSemantico(
+				ctx.Expressao().GetStart().GetLine(),
+				"condicao do faca deve ser do tipo logico",
+			)
+		}
+	}
 
 	return nil
 }
-
 func (j *JanderSemantico) VisitCmdEscreva(
 	ctx *parser.CmdEscrevaContext,
 ) interface{} {
@@ -973,18 +1017,23 @@ func (j *JanderSemantico) checkIdentificadores(t antlr.Tree) {
 	}
 }
 
-func (j *JanderSemantico) VisitIdentificador(ctx *parser.IdentificadorContext) interface{} {
-	nomeBruto := ctx.GetText()
-	nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
+func (j *JanderSemantico) VisitIdentificador(
+	ctx *parser.IdentificadorContext,
+) interface{} {
 
-	if !j.tabela.Existe(nomeBase) {
-		if !ErroJaReportado(nomeBase) {
+	nomeBruto := ctx.GetText()
+
+	if !j.tabela.Existe(nomeBruto) {
+
+		if !ErroJaReportado(nomeBruto) {
+
 			AdicionarErroSemantico(
 				ctx.GetStart().GetLine(),
 				"identificador "+nomeBruto+" nao declarado",
 			)
 		}
 	}
+
 	return nil
 }
 func extrairNomeBase(nomeCompleto string) string {

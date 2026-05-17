@@ -128,7 +128,7 @@ func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
 
 	partes := strings.Split(nome, ".")
 
-	nomeBase := strings.ToLower(partes[0])
+	nomeBase := partes[0]
 
 	println("NOME BASE:", nomeBase)
 
@@ -140,7 +140,7 @@ func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
 
 			println("  TESTANDO:", k)
 
-			if strings.ToLower(k) == nomeBase {
+			if k == nomeBase {
 
 				println("  ENCONTROU BASE:", k)
 
@@ -152,7 +152,7 @@ func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
 				}
 
 				// acesso campo registro
-				campo := strings.ToLower(partes[1])
+				campo := partes[1]
 
 				println("  BUSCANDO CAMPO:", campo)
 
@@ -175,7 +175,11 @@ func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
 				} else {
 					println("  CAMPO NAO ENCONTRADO")
 				}
+				println("CAMPO BUSCADO:", campo)
 
+				for c := range entrada.CamposRegistro {
+					println("CAMPO REAL:", c)
+				}
 				return ok
 			}
 		}
@@ -199,7 +203,7 @@ func (t *TabelaDeSimbolos) Verificar(nomeCompleto string) TipoJander {
 
 	partes := strings.Split(nome, ".")
 
-	nomeBase := strings.ToLower(partes[0])
+	nomeBase := partes[0]
 
 	println("NOME BASE:", nomeBase)
 
@@ -211,7 +215,7 @@ func (t *TabelaDeSimbolos) Verificar(nomeCompleto string) TipoJander {
 
 			println("  TESTANDO:", k)
 
-			if strings.ToLower(k) == nomeBase {
+			if k == nomeBase {
 
 				println("  ENCONTROU BASE:", k)
 
@@ -224,7 +228,7 @@ func (t *TabelaDeSimbolos) Verificar(nomeCompleto string) TipoJander {
 				}
 
 				// campo registro
-				campo := strings.ToLower(partes[1])
+				campo := partes[1]
 
 				println("  BUSCANDO CAMPO:", campo)
 
@@ -305,15 +309,10 @@ func (t *TabelaDeSimbolos) ObterTipoRetorno(nome string) TipoJander {
 }
 func (t *TabelaDeSimbolos) ObterEntrada(nome string) (EntradaTabela, bool) {
 
-	nomeBusca := strings.ToLower(nome)
-
 	for i := len(t.escopos) - 1; i >= 0; i-- {
 
-		for k, entrada := range t.escopos[i] {
-
-			if strings.ToLower(k) == nomeBusca {
-				return entrada, true
-			}
+		if entrada, ok := t.escopos[i][nome]; ok {
+			return entrada, true
 		}
 	}
 
@@ -371,7 +370,15 @@ func (t *TabelaDeSimbolos) AdicionarCampoRegistro(
 				".",
 				campo,
 			)
-			entrada.CamposRegistro[strings.ToLower(campo)] = tipo
+
+			entrada.CamposRegistro[campo] = tipo
+
+			println("CAMPOS AGORA:")
+
+			for c := range entrada.CamposRegistro {
+				println(" ->", c)
+			}
+			entrada.CamposRegistro[campo] = tipo
 			t.escopos[i][nomeRegistro] = entrada
 			return
 		}
