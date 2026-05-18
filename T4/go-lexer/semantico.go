@@ -7,17 +7,20 @@ import (
 	"github.com/antlr4-go/antlr/v4"
 )
 
+// JanderSemantico é um visitante que percorre a árvore de análise sintática gerada pelo ANTLR para realizar a análise semântica do programa, verificando tipos, escopos e outras regras semânticas definidas na linguagem.
 type JanderSemantico struct {
 	parser.BaseCalcLexerVisitor
 	tabela *TabelaDeSimbolos
 }
 
+// NewJanderSemantico cria e inicializa uma nova instância do visitante semântico, configurando a tabela de símbolos para ser utilizada durante a análise semântica do programa.
 func NewJanderSemantico() *JanderSemantico {
 	return &JanderSemantico{
 		tabela: nil,
 	}
 }
 
+// VisitPrograma é o método de visita para o nó raiz do programa, onde a tabela de símbolos é inicializada e as declarações e corpo do programa são visitados para realizar a análise semântica.
 func (j *JanderSemantico) VisitPrograma(ctx *parser.ProgramaContext) interface{} {
 	j.tabela = NewTabelaDeSimbolos()
 
@@ -32,6 +35,7 @@ func (j *JanderSemantico) VisitPrograma(ctx *parser.ProgramaContext) interface{}
 	return nil
 }
 
+// visitdeclaracoes é o método de visita para o nó de declarações, onde cada declaração local ou global é visitada para realizar a análise semântica das declarações do programa.
 func (j *JanderSemantico) VisitDeclaracoes(ctx *parser.DeclaracoesContext) interface{} {
 	for _, d := range ctx.AllDecl_local_global() {
 		d.Accept(j)
@@ -40,6 +44,7 @@ func (j *JanderSemantico) VisitDeclaracoes(ctx *parser.DeclaracoesContext) inter
 	return nil
 }
 
+// VisitDecl_local_global é o método de visita para o nó de declaração local ou global, onde as declarações locais e globais são processadas para verificar a validade das declarações e atualizar a tabela de símbolos conforme necessário.
 func (j *JanderSemantico) VisitDecl_local_global(ctx *parser.Decl_local_globalContext) interface{} {
 
 	if ctx.Declaracao_local() != nil {
@@ -53,6 +58,7 @@ func (j *JanderSemantico) VisitDecl_local_global(ctx *parser.Decl_local_globalCo
 	return nil
 }
 
+// visitcorpo é o método de visita para o nó de corpo do programa, onde as declarações locais e os comandos dentro do corpo são visitados para realizar a análise semântica das operações e estruturas de controle presentes no programa.
 func (j *JanderSemantico) VisitCorpo(ctx *parser.CorpoContext) interface{} {
 
 	for _, d := range ctx.AllDeclaracao_local() {
@@ -66,6 +72,7 @@ func (j *JanderSemantico) VisitCorpo(ctx *parser.CorpoContext) interface{} {
 	return nil
 }
 
+// visitdecrlaracao_local é o método de visita para o nó de declaração local, onde as variáveis, constantes e tipos locais são processados para verificar a validade das declarações e atualizar a tabela de símbolos conforme necessário.
 func (j *JanderSemantico) VisitDeclaracao_local(ctx *parser.Declaracao_localContext) interface{} {
 
 	if ctx.Variavel() != nil {
@@ -143,6 +150,7 @@ func (j *JanderSemantico) VisitDeclaracao_local(ctx *parser.Declaracao_localCont
 	return nil
 }
 
+// VisitVariavel é o método de visita para o nó de declaração de variável, onde as variáveis são processadas para verificar a validade das declarações, atualizar a tabela de símbolos e lidar com casos específicos como registros e tipos estendidos.
 func (j *JanderSemantico) VisitVariavel(
 	ctx *parser.VariavelContext,
 ) interface{} {
@@ -223,6 +231,7 @@ func (j *JanderSemantico) VisitVariavel(
 	return nil
 }
 
+// VisitDeclaracao_global é o método de visita para o nó de declaração global, onde as funções e procedimentos são processados para verificar a validade das declarações, atualizar a tabela de símbolos, criar novos escopos para os corpos das funções e procedimentos e realizar a análise semântica dos parâmetros, corpo e comandos associados.
 func (j *JanderSemantico) VisitDeclaracao_global(
 	ctx *parser.Declaracao_globalContext,
 ) interface{} {
@@ -330,6 +339,7 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 
 }
 
+// VisitParametro é o método de visita para o nó de parâmetro, onde os parâmetros são processados para verificar a validade das declarações, atualizar a tabela de símbolos e lidar com casos específicos como registros e tipos estendidos.
 func (j *JanderSemantico) VisitParametro(
 	ctx *parser.ParametroContext,
 ) interface{} {
@@ -391,6 +401,7 @@ func (j *JanderSemantico) VisitParametro(
 	return nil
 }
 
+// VisitCmd é o método de visita para o nó de comando, onde os diferentes tipos de comandos são processados para verificar a validade das operações, atualizar a tabela de símbolos conforme necessário e realizar a análise semântica dos comandos presentes no programa.
 func (j *JanderSemantico) VisitCmd(ctx *parser.CmdContext) interface{} {
 
 	if ctx.CmdChamada() != nil {
@@ -425,6 +436,7 @@ func (j *JanderSemantico) VisitCmd(ctx *parser.CmdContext) interface{} {
 	return j.VisitChildren(ctx)
 }
 
+// VisitCmdLeia é o método de visita para o nó de comando de leitura, onde os identificadores envolvidos na leitura são processados para verificar se estão declarados na tabela de símbolos e reportar erros semânticos caso contrário.
 func (j *JanderSemantico) VisitCmdLeia(
 	ctx *parser.CmdLeiaContext,
 ) interface{} {
@@ -448,6 +460,8 @@ func (j *JanderSemantico) VisitCmdLeia(
 	}
 	return nil
 }
+
+// VisitCmdFaca é o método de visita para o nó de comando de faça, onde os comandos dentro do bloco de faça são processados para realizar a análise semântica dos comandos e a expressão de condição associada ao comando de faça.
 func (j *JanderSemantico) VisitCmdFaca(
 	ctx *parser.CmdFacaContext,
 ) interface{} {
@@ -472,6 +486,8 @@ func (j *JanderSemantico) VisitCmdFaca(
 
 	return nil
 }
+
+// VisitCmdEscreva é o método de visita para o nó de comando de escrita, onde as expressões envolvidas na escrita são processadas para realizar a análise semântica das expressões e verificar a validade dos identificadores presentes nas expressões.
 func (j *JanderSemantico) VisitCmdEscreva(
 	ctx *parser.CmdEscrevaContext,
 ) interface{} {
@@ -486,6 +502,7 @@ func (j *JanderSemantico) VisitCmdEscreva(
 	return nil
 }
 
+// visitcmdse é o método de visita para o nó de comando de seleção (se), onde a expressão de condição e os comandos associados aos blocos de então e senao são processados para realizar a análise semântica das estruturas de controle presentes no programa.
 func (j *JanderSemantico) VisitCmdSe(
 	ctx *parser.CmdSeContext,
 ) interface{} {
@@ -511,6 +528,7 @@ func (j *JanderSemantico) VisitCmdSe(
 	return nil
 }
 
+// VisitCmdEnquanto é o método de visita para o nó de comando de repetição (enquanto), onde a expressão de condição e os comandos associados ao bloco de enquanto são processados para realizar a análise semântica das estruturas de controle presentes no programa.
 func (j *JanderSemantico) VisitCmdEnquanto(
 	ctx *parser.CmdEnquantoContext,
 ) interface{} {
@@ -536,6 +554,7 @@ func (j *JanderSemantico) VisitCmdEnquanto(
 	return nil
 }
 
+// VisitCmdAtribuicao é o método de visita para o nó de comando de atribuição, onde os identificadores envolvidos na atribuição e a expressão associada são processados para verificar a validade da operação de atribuição, atualizar a tabela de símbolos conforme necessário e realizar a análise semântica das expressões presentes na atribuição.
 func (j *JanderSemantico) VisitCmdAtribuicao(
 	ctx *parser.CmdAtribuicaoContext,
 ) interface{} {
@@ -595,6 +614,8 @@ func (j *JanderSemantico) VisitCmdAtribuicao(
 
 	return nil
 }
+
+// VisitCmdChamada é o método de visita para o nó de comando de chamada, onde os identificadores envolvidos na chamada de função ou procedimento e as expressões associadas aos parâmetros são processados para verificar a validade da operação de chamada, atualizar a tabela de símbolos conforme necessário e realizar a análise semântica das expressões presentes na chamada.
 func (j *JanderSemantico) VisitCmdChamada(
 	ctx *parser.CmdChamadaContext,
 ) interface{} {
@@ -644,6 +665,7 @@ func (j *JanderSemantico) VisitCmdChamada(
 	return nil
 }
 
+// VisitCmdRetorne é o método de visita para o nó de comando de retorno, onde a expressão associada ao comando de retorno é processada para verificar a validade da operação de retorno, comparar o tipo da expressão com o tipo de retorno esperado da função atual e realizar a análise semântica das expressões presentes no comando de retorno.
 func (j *JanderSemantico) VisitCmdRetorne(
 	ctx *parser.CmdRetorneContext,
 ) interface{} {
@@ -672,12 +694,14 @@ func (j *JanderSemantico) VisitCmdRetorne(
 	return nil
 }
 
+// tipoExpressao é um método auxiliar que recebe um contexto de expressão e retorna o tipo da expressão, realizando a análise semântica das expressões presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nas expressões.
 func (j *JanderSemantico) tipoExpressao(
 	ctx parser.IExpressaoContext,
 ) TipoJander {
 	return VerificarExpressao(j.tabela, ctx)
 }
 
+// tipoTermoLogico é um método auxiliar que recebe um contexto de termo lógico e retorna o tipo do termo lógico, realizando a análise semântica dos termos lógicos presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nos termos lógicos.
 func (j *JanderSemantico) tipoTermoLogico(
 	ctx parser.ITermo_logicoContext,
 ) TipoJander {
@@ -694,6 +718,7 @@ func (j *JanderSemantico) tipoTermoLogico(
 	return LOGICO
 }
 
+// tipoFatorLogico é um método auxiliar que recebe um contexto de fator lógico e retorna o tipo do fator lógico, realizando a análise semântica dos fatores lógicos presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nos fatores lógicos.
 func (j *JanderSemantico) tipoFatorLogico(
 	ctx parser.IFator_logicoContext,
 ) TipoJander {
@@ -701,6 +726,7 @@ func (j *JanderSemantico) tipoFatorLogico(
 	return j.tipoParcelaLogica(ctx.Parcela_logica())
 }
 
+// tipoParcelaLogica é um método auxiliar que recebe um contexto de parcela lógica e retorna o tipo da parcela lógica, realizando a análise semântica das parcelas lógicas presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nas parcelas lógicas.
 func (j *JanderSemantico) tipoParcelaLogica(
 	ctx parser.IParcela_logicaContext,
 ) TipoJander {
@@ -714,6 +740,7 @@ func (j *JanderSemantico) tipoParcelaLogica(
 	return j.tipoExpRelacional(ctx.Exp_relacional())
 }
 
+// tipoExpRelacional é um método auxiliar que recebe um contexto de expressão relacional e retorna o tipo da expressão relacional, realizando a análise semântica das expressões relacionais presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nas expressões relacionais.
 func (j *JanderSemantico) tipoExpRelacional(
 	ctx parser.IExp_relacionalContext,
 ) TipoJander {
@@ -740,6 +767,7 @@ func (j *JanderSemantico) tipoExpRelacional(
 	)
 }
 
+// tipoExpAritmetica é um método auxiliar que recebe um contexto de expressão aritmética e retorna o tipo da expressão aritmética, realizando a análise semântica das expressões aritméticas presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nas expressões aritméticas.
 func (j *JanderSemantico) tipoExpAritmetica(
 	ctx parser.IExp_aritmeticaContext,
 ) TipoJander {
@@ -760,6 +788,7 @@ func (j *JanderSemantico) tipoExpAritmetica(
 	return tipo
 }
 
+// tipoTermo é um método auxiliar que recebe um contexto de termo e retorna o tipo do termo, realizando a análise semântica dos termos presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nos termos.
 func (j *JanderSemantico) tipoTermo(
 	ctx parser.ITermoContext,
 ) TipoJander {
@@ -780,6 +809,7 @@ func (j *JanderSemantico) tipoTermo(
 	return tipo
 }
 
+// tipoFator é um método auxiliar que recebe um contexto de fator e retorna o tipo do fator, realizando a análise semântica dos fatores presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nos fatores.
 func (j *JanderSemantico) tipoFator(
 	ctx parser.IFatorContext,
 ) TipoJander {
@@ -800,6 +830,7 @@ func (j *JanderSemantico) tipoFator(
 	return tipo
 }
 
+// tipoParcela é um método auxiliar que recebe um contexto de parcela e retorna o tipo da parcela, realizando a análise semântica das parcelas presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nas parcelas.
 func (j *JanderSemantico) tipoParcela(
 	ctx parser.IParcelaContext,
 ) TipoJander {
@@ -815,6 +846,7 @@ func (j *JanderSemantico) tipoParcela(
 	)
 }
 
+// tipoParcelaUnario é um método auxiliar que recebe um contexto de parcela unária e retorna o tipo da parcela unária, realizando a análise semântica das parcelas unárias presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nas parcelas unárias.
 func (j *JanderSemantico) tipoParcelaUnario(
 	ctx parser.IParcela_unarioContext,
 ) TipoJander {
@@ -888,6 +920,7 @@ func (j *JanderSemantico) tipoParcelaUnario(
 
 }
 
+// tipoParcelaNaoUnario é um método auxiliar que recebe um contexto de parcela não unária e retorna o tipo da parcela não unária, realizando a análise semântica das parcelas não unárias presentes no programa e verificando a validade dos identificadores, operações e tipos envolvidos nas parcelas não unárias.
 func (j *JanderSemantico) tipoParcelaNaoUnario(ctx parser.IParcela_nao_unarioContext) TipoJander {
 	if ctx.CADEIA() != nil {
 		return LITERAL
@@ -926,6 +959,7 @@ func (j *JanderSemantico) tipoParcelaNaoUnario(ctx parser.IParcela_nao_unarioCon
 	return INVALIDO
 }
 
+// checkIdentificadores é um método auxiliar que percorre a árvore de análise sintática em busca de identificadores e verifica se eles estão declarados na tabela de símbolos, reportando erros semânticos caso contrário.
 func (j *JanderSemantico) checkIdentificadores(t antlr.Tree) {
 	if ident, ok := t.(parser.IIdentificadorContext); ok {
 		nomeBruto := ident.GetText()
@@ -946,6 +980,7 @@ func (j *JanderSemantico) checkIdentificadores(t antlr.Tree) {
 	}
 }
 
+// VisitIdentificador é o método de visita para o nó de identificador, onde o nome do identificador é processado para verificar se está declarado na tabela de símbolos e reportar erros semânticos caso contrário.
 func (j *JanderSemantico) VisitIdentificador(
 	ctx *parser.IdentificadorContext,
 ) interface{} {
@@ -965,6 +1000,8 @@ func (j *JanderSemantico) VisitIdentificador(
 
 	return nil
 }
+
+// extrairNomeBase é uma função auxiliar que recebe um nome completo de identificador, que pode incluir operadores de acesso a campos (ponto) e índices de vetores (colchetes), e extrai o nome base do identificador para fins de verificação na tabela de símbolos.
 func extrairNomeBase(nomeCompleto string) string {
 	if idxPonto := strings.Index(nomeCompleto, "."); idxPonto != -1 {
 		nomeCompleto = nomeCompleto[:idxPonto]
