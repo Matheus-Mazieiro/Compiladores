@@ -1077,10 +1077,10 @@ func (j *JanderSemantico) tipoParcelaNaoUnario(ctx parser.IParcela_nao_unarioCon
 
 	if ctx.Identificador() != nil {
 		nomeBruto := ctx.Identificador().GetText()
-		nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
+		//nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
 
-		if !j.tabela.Existe(nomeBase) {
-			if !ErroJaReportado(nomeBase) {
+		if !j.tabela.Existe(nomeBruto) {
+			if !ErroJaReportado(nomeBruto) {
 				AdicionarErroSemantico(
 					ctx.GetStart().GetLine(),
 					"identificador "+nomeBruto+" nao declarado",
@@ -1098,10 +1098,10 @@ func (j *JanderSemantico) tipoParcelaNaoUnario(ctx parser.IParcela_nao_unarioCon
 func (j *JanderSemantico) checkIdentificadores(t antlr.Tree) {
 	if ident, ok := t.(parser.IIdentificadorContext); ok {
 		nomeBruto := ident.GetText()
-		nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
+		//nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
 
 		if !j.tabela.Existe(nomeBruto) {
-			if !ErroJaReportado(nomeBase) {
+			if !ErroJaReportado(nomeBruto) {
 				AdicionarErroSemantico(
 					ident.GetStart().GetLine(),
 					"identificador "+nomeBruto+" nao declarado",
