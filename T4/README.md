@@ -1,7 +1,7 @@
 # Compilador para a Linguagem LA
 Este projeto é parte do trabalho da disciplina de Compiladores na UFSCar, orientado pelo Prof. Jander. O objetivo é implementar, em etapas, um compilador para a linguagem LA (Linguagem Algorítmica), desenvolvida no âmbito do DC/UFSCar.
 
-## T3 — Analisador Semântico
+## T4 — Analisador Semântico
 Nesta etapa, desenvolvemos o analisador semântico da linguagem LA. O analisador semântico verifica se o programa está correto em termos de significado, analisando o uso e a declaração de identificadores, controle de escopo e compatibilidade de tipos em atribuições e expressões. Ele detecta erros como variáveis não declaradas, redefinições no mesmo escopo e incompatibilidades de tipo, sem interromper a execução, permitindo reportar todos os erros encontrados no código.
 
 
