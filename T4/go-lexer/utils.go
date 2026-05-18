@@ -16,8 +16,6 @@ var tiposComErro = make(map[string]bool)
 func AdicionarErroSemantico(linha int, msg string) {
 	erro := fmt.Sprintf("Linha %d: %s", linha, msg)
 	ErrosSemanticos = append(ErrosSemanticos, erro)
-	// fmt.Println(">>> ADICIONOU ERRO:", linha, msg)
-	fmt.Println(">>> ADICIONOU ERRO GLOBAL:", linha, msg)
 }
 
 func ErroJaReportado(nome string) bool {
@@ -41,7 +39,7 @@ func Compatibilidade(tipo1 TipoJander, tipo2 TipoJander) bool {
 		return true
 	}
 
-	// inteiro ↔ real
+	// inteiro - real
 	if (tipo1 == INTEIRO && tipo2 == REAL) ||
 		(tipo1 == REAL && tipo2 == INTEIRO) {
 		return true
@@ -66,10 +64,7 @@ func Compatibilidade(tipo1 TipoJander, tipo2 TipoJander) bool {
 	return false
 }
 func CompatibilidadeFuncao(tipo1 TipoJander, tipo2 TipoJander) bool {
-
-	// parâmetros de funções/procedimentos
-	// exigem tipos EXATOS
-
+	// parâmetros de funções/procedimentos exigem tipos EXATOS
 	if tipo1 == tipo2 {
 		return true
 	}
@@ -114,7 +109,6 @@ func VerificarTipoBasico(ctx parser.ITipo_basicoContext) TipoJander {
 }
 
 func VerificarTipo(tabela *TabelaDeSimbolos, ctx parser.ITipoContext) TipoJander {
-
 	if ctx == nil {
 		return INVALIDO
 	}
@@ -124,18 +118,11 @@ func VerificarTipo(tabela *TabelaDeSimbolos, ctx parser.ITipoContext) TipoJander
 	}
 
 	if ctx.Tipo_estendido() != nil {
-
 		tipo := VerificarTipoEstendido(tabela, ctx.Tipo_estendido())
-
 		tb := ctx.Tipo_estendido().Tipo_basico_ident()
-
 		if tb != nil && tb.IDENT() != nil {
-
 			nome := tb.IDENT().GetText()
-
-			if tabela.Existe(nome) &&
-				tabela.Verificar(nome) == REGISTRO_TIPO {
-
+			if tabela.Existe(nome) && tabela.Verificar(nome) == REGISTRO_TIPO {
 				return REGISTRO_TIPO
 			}
 		}
@@ -146,10 +133,7 @@ func VerificarTipo(tabela *TabelaDeSimbolos, ctx parser.ITipoContext) TipoJander
 	return INVALIDO
 }
 
-func VerificarTipoEstendido(
-	tabela *TabelaDeSimbolos,
-	ctx parser.ITipo_estendidoContext,
-) TipoJander {
+func VerificarTipoEstendido(tabela *TabelaDeSimbolos, ctx parser.ITipo_estendidoContext) TipoJander {
 
 	if ctx == nil {
 		return INVALIDO
@@ -163,18 +147,13 @@ func VerificarTipoEstendido(
 	texto := ctx.GetText()
 
 	if len(texto) > 0 && texto[0] == '^' {
-
 		switch base {
-
 		case INTEIRO:
 			return PONTEIRO_INTEIRO
-
 		case REAL:
 			return PONTEIRO_REAL
-
 		case LITERAL:
 			return PONTEIRO_LITERAL
-
 		case LOGICO:
 			return PONTEIRO_LOGICO
 		}
@@ -189,7 +168,6 @@ func VerificarTipoEstendido(
 }
 
 func VerificarTipoBasicoIdent(tabela *TabelaDeSimbolos, ctx parser.ITipo_basico_identContext) TipoJander {
-
 	if ctx == nil {
 		return INVALIDO
 	}
@@ -199,64 +177,44 @@ func VerificarTipoBasicoIdent(tabela *TabelaDeSimbolos, ctx parser.ITipo_basico_
 	}
 
 	if ctx.IDENT() != nil {
-
 		nome := ctx.IDENT().GetText()
-
 		_, ok := tabela.ObterEntrada(nome)
-
 		if !ok {
-
 			if !tiposComErro[nome] {
-
 				tiposComErro[nome] = true
-
-				AdicionarErroSemantico(
-					ctx.GetStart().GetLine(),
+				AdicionarErroSemantico(ctx.GetStart().GetLine(),
 					"tipo "+nome+" nao declarado",
 				)
 			}
-
 			return INVALIDO
 		}
-
 		return tabela.Verificar(nome)
 	}
-
 	return INVALIDO
 }
 
 func VerificarIdentificador(tabela *TabelaDeSimbolos, ctx parser.IIdentificadorContext) TipoJander {
-
 	if ctx == nil {
 		return INVALIDO
 	}
-
 	nome := ctx.GetText()
 
 	if !tabela.Existe(nome) {
-
 		if !ErroJaReportado(nome) {
-
-			AdicionarErroSemantico(
-				ctx.GetStart().GetLine(),
+			AdicionarErroSemantico(ctx.GetStart().GetLine(),
 				"identificador "+nome+" nao declarado",
 			)
 		}
-
 		return INVALIDO
 	}
-
 	return tabela.Verificar(nome)
 }
 
 func splitNome(nome string) []string {
 	return strings.Split(nome, ".")
 }
-func VerificarExpressao(
-	tabela *TabelaDeSimbolos,
-	ctx parser.IExpressaoContext,
-) TipoJander {
 
+func VerificarExpressao(tabela *TabelaDeSimbolos, ctx parser.IExpressaoContext) TipoJander {
 	if ctx == nil {
 		return INVALIDO
 	}
@@ -267,21 +225,15 @@ func VerificarExpressao(
 		return INVALIDO
 	}
 
-	// se tiver operador logico → resultado logico
+	// se tiver operador logico, resultado logico
 	if len(termos) > 1 {
 		return LOGICO
 	}
 
-	return VerificarTermoLogico(
-		tabela,
-		termos[0],
-	)
+	return VerificarTermoLogico(tabela, termos[0])
 }
-func VerificarTermoLogico(
-	tabela *TabelaDeSimbolos,
-	ctx parser.ITermo_logicoContext,
-) TipoJander {
 
+func VerificarTermoLogico(tabela *TabelaDeSimbolos, ctx parser.ITermo_logicoContext) TipoJander {
 	fatores := ctx.AllFator_logico()
 
 	if len(fatores) == 0 {
@@ -292,55 +244,26 @@ func VerificarTermoLogico(
 		return LOGICO
 	}
 
-	return VerificarFatorLogico(
-		tabela,
-		fatores[0],
-	)
-}
-func VerificarFatorLogico(
-	tabela *TabelaDeSimbolos,
-	ctx parser.IFator_logicoContext,
-) TipoJander {
-
-	return VerificarParcelaLogica(
-		tabela,
-		ctx.Parcela_logica(),
-	)
+	return VerificarFatorLogico(tabela, fatores[0])
 }
 
-func VerificarParcelaLogica(
-	tabela *TabelaDeSimbolos,
-	ctx parser.IParcela_logicaContext,
-) TipoJander {
+func VerificarFatorLogico(tabela *TabelaDeSimbolos, ctx parser.IFator_logicoContext) TipoJander {
+	return VerificarParcelaLogica(tabela, ctx.Parcela_logica())
+}
 
-	if ctx.VERDADEIRO() != nil ||
-		ctx.FALSO() != nil {
-
+func VerificarParcelaLogica(tabela *TabelaDeSimbolos, ctx parser.IParcela_logicaContext) TipoJander {
+	if ctx.VERDADEIRO() != nil || ctx.FALSO() != nil {
 		return LOGICO
 	}
 
-	return VerificarExpRelacional(
-		tabela,
-		ctx.Exp_relacional(),
-	)
+	return VerificarExpRelacional(tabela, ctx.Exp_relacional())
 }
 
-func VerificarExpRelacional(
-	tabela *TabelaDeSimbolos,
-	ctx parser.IExp_relacionalContext,
-) TipoJander {
-
+func VerificarExpRelacional(tabela *TabelaDeSimbolos, ctx parser.IExp_relacionalContext) TipoJander {
 	if ctx.Op_relacional() != nil {
+		t1 := VerificarExpAritmetica(tabela, ctx.Exp_aritmetica(0))
 
-		t1 := VerificarExpAritmetica(
-			tabela,
-			ctx.Exp_aritmetica(0),
-		)
-
-		t2 := VerificarExpAritmetica(
-			tabela,
-			ctx.Exp_aritmetica(1),
-		)
+		t2 := VerificarExpAritmetica(tabela, ctx.Exp_aritmetica(1))
 
 		if Compatibilidade(t1, t2) {
 			return LOGICO
@@ -349,21 +272,13 @@ func VerificarExpRelacional(
 		return INVALIDO
 	}
 
-	return VerificarExpAritmetica(
-		tabela,
-		ctx.Exp_aritmetica(0),
-	)
+	return VerificarExpAritmetica(tabela, ctx.Exp_aritmetica(0))
 }
 
-func VerificarExpAritmetica(
-	tabela *TabelaDeSimbolos,
-	ctx parser.IExp_aritmeticaContext,
-) TipoJander {
-
+func VerificarExpAritmetica(tabela *TabelaDeSimbolos, ctx parser.IExp_aritmeticaContext) TipoJander {
 	var tipo TipoJander = INVALIDO
 
 	for i, termo := range ctx.AllTermo() {
-
 		t := VerificarTermo(tabela, termo)
 
 		if i == 0 {
@@ -376,15 +291,10 @@ func VerificarExpAritmetica(
 	return tipo
 }
 
-func VerificarTermo(
-	tabela *TabelaDeSimbolos,
-	ctx parser.ITermoContext,
-) TipoJander {
-
+func VerificarTermo(tabela *TabelaDeSimbolos, ctx parser.ITermoContext) TipoJander {
 	var tipo TipoJander = INVALIDO
 
 	for i, fator := range ctx.AllFator() {
-
 		t := VerificarFator(tabela, fator)
 
 		if i == 0 {
@@ -397,15 +307,10 @@ func VerificarTermo(
 	return tipo
 }
 
-func VerificarFator(
-	tabela *TabelaDeSimbolos,
-	ctx parser.IFatorContext,
-) TipoJander {
-
+func VerificarFator(tabela *TabelaDeSimbolos, ctx parser.IFatorContext) TipoJander {
 	var tipo TipoJander = INVALIDO
 
 	for i, parcela := range ctx.AllParcela() {
-
 		t := VerificarParcela(tabela, parcela)
 
 		if i == 0 {
@@ -418,138 +323,43 @@ func VerificarFator(
 	return tipo
 }
 
-func VerificarParcela(
-	tabela *TabelaDeSimbolos,
-	ctx parser.IParcelaContext,
-) TipoJander {
-
+func VerificarParcela(tabela *TabelaDeSimbolos, ctx parser.IParcelaContext) TipoJander {
 	if ctx.Parcela_unario() != nil {
-		return VerificarParcelaUnario(
-			tabela,
-			ctx.Parcela_unario(),
-		)
+		return VerificarParcelaUnario(tabela, ctx.Parcela_unario())
 	}
 
-	return VerificarParcelaNaoUnario(
-		tabela,
-		ctx.Parcela_nao_unario(),
-	)
+	return VerificarParcelaNaoUnario(tabela, ctx.Parcela_nao_unario())
 }
 
-// func VerificarParcelaUnario(
-// 	tabela *TabelaDeSimbolos,
-// 	ctx parser.IParcela_unarioContext,
-// ) TipoJander {
-
-// 	if ctx.NUM_INT() != nil {
-// 		return INTEIRO
-// 	}
-
-// 	if ctx.NUM_REAL() != nil {
-// 		return REAL
-// 	}
-
-// 	if ctx.Identificador() != nil {
-// 		return VerificarIdentificador(
-// 			tabela,
-// 			ctx.Identificador(),
-// 		)
-// 	}
-
-// 	if ctx.IDENT() != nil {
-// 		return tabela.ObterTipoRetorno(
-// 			ctx.IDENT().GetText(),
-// 		)
-// 	}
-
-// 	if len(ctx.AllExpressao()) > 0 {
-// 		return VerificarExpressao(
-// 			tabela,
-// 			ctx.Expressao(0),
-// 		)
-// 	}
-
-//		return INVALIDO
-//	}
-func VerificarParcelaUnario(
-	tabela *TabelaDeSimbolos,
-	ctx parser.IParcela_unarioContext,
-) TipoJander {
-
-	println("===================================")
-	println("VERIFICAR PARCELA UNARIO")
-	println("TEXTO:", ctx.GetText())
-
-	// =====================================
-	// NUMERO INTEIRO
-	// =====================================
+func VerificarParcelaUnario(tabela *TabelaDeSimbolos, ctx parser.IParcela_unarioContext) TipoJander {
 	if ctx.NUM_INT() != nil {
-
-		println("-> NUM_INT")
-
 		return INTEIRO
 	}
 
-	// =====================================
-	// NUMERO REAL
-	// =====================================
 	if ctx.NUM_REAL() != nil {
-
-		println("-> NUM_REAL")
-
 		return REAL
 	}
 
-	// =====================================
-	// CHAMADA DE FUNCAO
-	// =====================================
 	if ctx.IDENT() != nil {
-
 		nome := ctx.IDENT().GetText()
-
-		println("ACHOU IDENT:", nome)
-
 		texto := ctx.GetText()
 
 		// chamada de função
 		if strings.Contains(texto, "(") {
-
-			println("-> CHAMADA DE FUNCAO")
-
 			if !tabela.Existe(nome) {
-
-				println("FUNCAO NAO EXISTE")
-
 				if !ErroJaReportado(nome) {
-
-					AdicionarErroSemantico(
-						ctx.GetStart().GetLine(),
+					AdicionarErroSemantico(ctx.GetStart().GetLine(),
 						"identificador "+nome+" nao declarado",
 					)
 				}
-
 				return INVALIDO
 			}
 
 			parametros := tabela.ObterParametros(nome)
 
-			println(
-				"PARAMS ESPERADOS:",
-				len(parametros),
-			)
-
-			println(
-				"PARAMS RECEBIDOS:",
-				len(ctx.AllExpressao()),
-			)
-
 			// quantidade
 			if len(parametros) != len(ctx.AllExpressao()) {
-
-				println("ERRO QUANTIDADE")
-
-				AdicionarErroSemantico(
-					ctx.GetStart().GetLine(),
+				AdicionarErroSemantico(ctx.GetStart().GetLine(),
 					"incompatibilidade de parametros na chamada de "+nome,
 				)
 
@@ -558,33 +368,12 @@ func VerificarParcelaUnario(
 
 			// tipos
 			for i, expr := range ctx.AllExpressao() {
+				tipoExpr := VerificarExpressao(tabela, expr)
 
-				tipoExpr := VerificarExpressao(
-					tabela,
-					expr,
-				)
-
-				println(
-					"PARAM",
-					i,
-					"ESPERADO:",
-					parametros[i],
-					"RECEBIDO:",
-					tipoExpr,
-				)
-
-				if !CompatibilidadeFuncao(
-					parametros[i],
-					tipoExpr,
-				) {
-
-					println("ERRO TIPO PARAM")
-
-					AdicionarErroSemantico(
-						ctx.GetStart().GetLine(),
+				if !CompatibilidadeFuncao(parametros[i], tipoExpr) {
+					AdicionarErroSemantico(ctx.GetStart().GetLine(),
 						"incompatibilidade de parametros na chamada de "+nome,
 					)
-
 					break
 				}
 			}
@@ -592,58 +381,28 @@ func VerificarParcelaUnario(
 			return tabela.ObterTipoRetorno(nome)
 		}
 
-		// identificador simples
-		println("-> IDENTIFICADOR SIMPLES")
-
 		return tabela.Verificar(nome)
 	}
 
-	// =====================================
-	// IDENTIFICADOR COMPLETO
-	// =====================================
 	if ctx.Identificador() != nil {
-
-		println("-> IDENTIFICADOR")
-
-		return VerificarIdentificador(
-			tabela,
-			ctx.Identificador(),
-		)
+		return VerificarIdentificador(tabela, ctx.Identificador())
 	}
 
-	// =====================================
-	// EXPRESSAO ENTRE PARENTESES
-	// =====================================
 	if len(ctx.AllExpressao()) > 0 {
-
-		println("-> EXPRESSAO ENTRE PARENTESES")
-
-		return VerificarExpressao(
-			tabela,
-			ctx.Expressao(0),
-		)
+		return VerificarExpressao(tabela, ctx.Expressao(0))
 	}
-
-	println("-> INVALIDO")
 
 	return INVALIDO
-
 }
 
-func VerificarParcelaNaoUnario(
-	tabela *TabelaDeSimbolos,
-	ctx parser.IParcela_nao_unarioContext,
-) TipoJander {
-
+func VerificarParcelaNaoUnario(tabela *TabelaDeSimbolos, ctx parser.IParcela_nao_unarioContext) TipoJander {
 	if ctx.CADEIA() != nil {
 		return LITERAL
 	}
 
 	if ctx.Identificador() != nil {
-
 		// &identificador
 		if ctx.ENDERECO() != nil {
-
 			nome := ctx.Identificador().GetText()
 
 			if !tabela.Existe(nome) {
@@ -653,10 +412,7 @@ func VerificarParcelaNaoUnario(
 			return ENDERECO
 		}
 
-		return VerificarIdentificador(
-			tabela,
-			ctx.Identificador(),
-		)
+		return VerificarIdentificador(tabela, ctx.Identificador())
 	}
 
 	return INVALIDO
