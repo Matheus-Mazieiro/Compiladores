@@ -1,4 +1,3 @@
-// esse é o semantico.go
 package main
 
 import (
@@ -32,8 +31,6 @@ func (j *JanderSemantico) VisitPrograma(ctx *parser.ProgramaContext) interface{}
 
 	return nil
 }
-
-// ================= DECLARAÇÕES =================
 
 func (j *JanderSemantico) VisitDeclaracoes(ctx *parser.DeclaracoesContext) interface{} {
 	for _, d := range ctx.AllDecl_local_global() {
@@ -71,13 +68,11 @@ func (j *JanderSemantico) VisitCorpo(ctx *parser.CorpoContext) interface{} {
 
 func (j *JanderSemantico) VisitDeclaracao_local(ctx *parser.Declaracao_localContext) interface{} {
 
-	// variável
 	if ctx.Variavel() != nil {
 		ctx.Variavel().Accept(j)
 		return nil
 	}
 
-	// constante
 	if ctx.CONSTANTE() != nil {
 
 		nome := ctx.IDENT().GetText()
@@ -110,7 +105,6 @@ func (j *JanderSemantico) VisitDeclaracao_local(ctx *parser.Declaracao_localCont
 		return nil
 	}
 
-	// tipo
 	if ctx.TIPO() != nil {
 
 		nome := ctx.IDENT().GetText()
@@ -149,7 +143,6 @@ func (j *JanderSemantico) VisitDeclaracao_local(ctx *parser.Declaracao_localCont
 	return nil
 }
 
-// ================= FUNÇÕES / PROCEDIMENTOS =================
 func (j *JanderSemantico) VisitVariavel(
 	ctx *parser.VariavelContext,
 ) interface{} {
@@ -158,7 +151,6 @@ func (j *JanderSemantico) VisitVariavel(
 
 	var nomeTipo string
 
-	// pega nome do typedef
 	if ctx.Tipo().Tipo_estendido() != nil {
 
 		tb := ctx.Tipo().Tipo_estendido().Tipo_basico_ident()
@@ -172,7 +164,6 @@ func (j *JanderSemantico) VisitVariavel(
 
 		nome := ident.IDENT(0).GetText()
 
-		// redeclaração
 		if j.tabela.ExisteNoEscopoAtual(nome) {
 
 			AdicionarErroSemantico(
@@ -183,23 +174,15 @@ func (j *JanderSemantico) VisitVariavel(
 			continue
 		}
 
-		// adiciona variável principal
 		j.tabela.Adicionar(nome, tipo)
 
-		// ==========================================
-		// COPIA CAMPOS DE UM TIPO REGISTRO (typedef)
-		// ==========================================
 		if nomeTipo != "" {
 
 			entradaTipo, ok := j.tabela.ObterEntrada(nomeTipo)
 
 			if ok {
 
-				println("COPIANDO CAMPOS DO TIPO:", nomeTipo)
-
 				for campo, entradaCampo := range entradaTipo.CamposRegistro {
-
-					println(" ->", campo)
 
 					j.tabela.AdicionarCampoRegistro(
 						nome,
@@ -210,9 +193,6 @@ func (j *JanderSemantico) VisitVariavel(
 			}
 		}
 
-		// ==========================================
-		// REGISTRO INLINE
-		// ==========================================
 		if ctx.Tipo().Registro() != nil {
 
 			for _, campoVar := range ctx.Tipo().Registro().AllVariavel() {
@@ -225,13 +205,6 @@ func (j *JanderSemantico) VisitVariavel(
 				for _, idCampo := range campoVar.AllIdentificador() {
 
 					nomeCampo := idCampo.IDENT(0).GetText()
-
-					println(
-						"ADICIONANDO CAMPO INLINE:",
-						nome,
-						".",
-						nomeCampo,
-					)
 
 					j.tabela.AdicionarCampoRegistro(
 						nome,
@@ -285,8 +258,6 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 		}
 	}
 
-	// procedimento
-	// procedimento
 	if ctx.PROCEDIMENTO() != nil {
 
 		j.tabela.AdicionarFuncao(
@@ -297,7 +268,6 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 
 		j.tabela.NovoEscopo(false)
 
-		// adiciona parâmetros
 		if ctx.Parametros() != nil {
 
 			for _, p := range ctx.Parametros().AllParametro() {
@@ -308,12 +278,10 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 			}
 		}
 
-		// declarações locais
 		for _, d := range ctx.AllDeclaracao_local() {
 			d.Accept(j)
 		}
 
-		// comandos
 		for _, c := range ctx.AllCmd() {
 			c.Accept(j)
 		}
@@ -321,7 +289,6 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 		j.tabela.AbandonarEscopo()
 	}
 
-	// função
 	if ctx.FUNCAO() != nil {
 
 		tipoRetorno := VerificarTipoEstendido(
@@ -338,7 +305,6 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 		j.tabela.NovoEscopo(true)
 		j.tabela.SetTipoRetornoFuncaoAtual(tipoRetorno)
 
-		// parâmetros
 		if ctx.Parametros() != nil {
 
 			for _, p := range ctx.Parametros().AllParametro() {
@@ -349,12 +315,10 @@ func (j *JanderSemantico) VisitDeclaracao_global(
 			}
 		}
 
-		// declarações locais
 		for _, d := range ctx.AllDeclaracao_local() {
 			d.Accept(j)
 		}
 
-		// comandos
 		for _, c := range ctx.AllCmd() {
 			c.Accept(j)
 		}
@@ -378,7 +342,6 @@ func (j *JanderSemantico) VisitParametro(
 	var entradaTipo EntradaTabela
 	var temRegistro bool
 
-	// pega typedef ANTES de adicionar variável
 	tb := ctx.Tipo_estendido().Tipo_basico_ident()
 
 	if tb != nil && tb.IDENT() != nil {
@@ -411,21 +374,7 @@ func (j *JanderSemantico) VisitParametro(
 		}
 
 		j.tabela.Adicionar(nome, tipo)
-		println("PARAMETRO ADICIONADO:", nome)
 
-		entrada, ok := j.tabela.ObterEntrada(nome)
-
-		if ok {
-
-			println("Campos do parametro:")
-
-			for campo := range entrada.CamposRegistro {
-				println(" ->", campo)
-			}
-		} else {
-			println("NAO ACHOU PARAMETRO")
-		}
-		// copia campos do registro
 		if temRegistro {
 
 			for campo, entradaCampo := range entradaTipo.CamposRegistro {
@@ -442,75 +391,51 @@ func (j *JanderSemantico) VisitParametro(
 	return nil
 }
 
-// ================= COMANDOS =================
-
 func (j *JanderSemantico) VisitCmd(ctx *parser.CmdContext) interface{} {
 
-	println("\n==============================")
-	println("[DEBUG] VISIT CMD")
-	println("TEXTO:", ctx.GetText())
-	println("==============================")
-
 	if ctx.CmdChamada() != nil {
-		println("[DEBUG] CMDCHAMADA ENCONTRADO")
 		return ctx.CmdChamada().Accept(j)
 	}
 
 	if ctx.CmdEscreva() != nil {
-		println("[DEBUG] CMDESCREVA")
 		return ctx.CmdEscreva().Accept(j)
 	}
 
 	if ctx.CmdSe() != nil {
-		println("[DEBUG] CMDSE")
 		return ctx.CmdSe().Accept(j)
 	}
 
 	if ctx.CmdAtribuicao() != nil {
-		println("[DEBUG] CMDATRIB")
 		return ctx.CmdAtribuicao().Accept(j)
 	}
 
 	if ctx.CmdLeia() != nil {
-		println("[DEBUG] CMDLEIA")
 		return ctx.CmdLeia().Accept(j)
 	}
 
 	if ctx.CmdFaca() != nil {
-		println("[DEBUG] CMDFACA")
 		return ctx.CmdFaca().Accept(j)
 	}
 	if ctx.CmdEnquanto() != nil {
-		println("[DEBUG] CMDENQUANTO")
 		return ctx.CmdEnquanto().Accept(j)
 	}
 	if ctx.CmdRetorne() != nil {
-		println("[DEBUG] CMDRETORNE")
 		return ctx.CmdRetorne().Accept(j)
 	}
-
-	println("[DEBUG] CMD NAO RECONHECIDO")
 	return j.VisitChildren(ctx)
 }
+
 func (j *JanderSemantico) VisitCmdLeia(
 	ctx *parser.CmdLeiaContext,
 ) interface{} {
-
-	println("===== CMD LEIA =====")
 
 	for _, ident := range ctx.AllIdentificador() {
 
 		nome := ident.GetText()
 
-		println("LEIA IDENT:", nome)
-
 		existe := j.tabela.Existe(nome)
 
-		println("EXISTE?", existe)
-
 		if !existe {
-
-			println(">>> VAI REPORTAR ERRO")
 
 			if !ErroJaReportado(nome) {
 
@@ -521,7 +446,6 @@ func (j *JanderSemantico) VisitCmdLeia(
 			}
 		}
 	}
-	println("QTD IDENT:", len(ctx.AllIdentificador()))
 	return nil
 }
 func (j *JanderSemantico) VisitCmdFaca(
@@ -554,10 +478,8 @@ func (j *JanderSemantico) VisitCmdEscreva(
 
 	for _, expr := range ctx.AllExpressao() {
 
-		// força análise semântica completa
 		j.tipoExpressao(expr)
 
-		// mantém checagem de identificadores
 		j.checkIdentificadores(expr.(antlr.Tree))
 	}
 
@@ -626,7 +548,6 @@ func (j *JanderSemantico) VisitCmdAtribuicao(
 		nomeErro = "^" + nomeBruto
 	}
 
-	// verifica identificador COMPLETO
 	if !j.tabela.Existe(nomeBruto) {
 
 		if !ErroJaReportado(nomeBruto) {
@@ -642,7 +563,6 @@ func (j *JanderSemantico) VisitCmdAtribuicao(
 
 	tipoVar := j.tabela.Verificar(nomeBruto)
 
-	// desreferenciamento
 	if ctx.PONTEIRO() != nil {
 
 		switch tipoVar {
@@ -679,19 +599,9 @@ func (j *JanderSemantico) VisitCmdChamada(
 	ctx *parser.CmdChamadaContext,
 ) interface{} {
 
-	println("\n==============================")
-	println("[DEBUG] VISIT CMDCHAMADA")
-	println("TEXTO:", ctx.GetText())
-	println("LINE:", ctx.GetStart().GetLine())
-	println("==============================")
-
 	nome := ctx.IDENT().GetText()
 
-	println("[DEBUG] CMD CHAMADA IDENT:", nome)
-
 	if !j.tabela.Existe(nome) {
-
-		println("[DEBUG] FUNCAO NAO EXISTE")
 
 		if !ErroJaReportado(nome) {
 			AdicionarErroSemantico(
@@ -707,9 +617,6 @@ func (j *JanderSemantico) VisitCmdChamada(
 
 	exprs := ctx.AllExpressao()
 
-	println("[DEBUG] CMD PARAMS ESPERADOS:", len(parametros))
-	println("[DEBUG] CMD PARAMS RECEBIDOS:", len(exprs))
-
 	if len(parametros) != len(exprs) {
 
 		AdicionarErroSemantico(
@@ -724,14 +631,7 @@ func (j *JanderSemantico) VisitCmdChamada(
 
 		tipoExpr := j.tipoExpressao(expr)
 
-		println("[DEBUG] CMD PARAM", i,
-			"ESPERADO:", parametros[i],
-			"RECEBIDO:", tipoExpr,
-		)
-
 		if !CompatibilidadeFuncao(parametros[i], tipoExpr) {
-
-			println("[DEBUG] CMD ERRO DE TIPO PARAM", i)
 
 			AdicionarErroSemantico(
 				ctx.GetStart().GetLine(),
@@ -771,8 +671,6 @@ func (j *JanderSemantico) VisitCmdRetorne(
 
 	return nil
 }
-
-// ================= EXPRESSÕES =================
 
 func (j *JanderSemantico) tipoExpressao(
 	ctx parser.IExpressaoContext,
@@ -921,69 +819,23 @@ func (j *JanderSemantico) tipoParcelaUnario(
 	ctx parser.IParcela_unarioContext,
 ) TipoJander {
 
-	println("===================================")
-	println("TIPO PARCELA UNARIO")
-	println("TEXTO:", ctx.GetText())
-	println("VISIT PARCELA:", ctx.GetText(), "LINE:", ctx.GetStart().GetLine())
-	println("NODE:", ctx.GetText())
-	println("HAS IDENT():", ctx.IDENT() != nil)
-	println("HAS identificador():", ctx.Identificador() != nil)
-	println("HAS expressao:", len(ctx.AllExpressao()))
-	println("LINE:", ctx.GetStart().GetLine())
-
-	// =========================================
-	// NUMERO INTEIRO
-	// =========================================
 	if ctx.NUM_INT() != nil {
-
-		println("-> NUM_INT")
 
 		return INTEIRO
 	}
 
-	// =========================================
-	// NUMERO REAL
-	// =========================================
 	if ctx.NUM_REAL() != nil {
-
-		println("-> NUM_REAL")
 
 		return REAL
 	}
 
-	// =========================================
-	// IDENTIFICADOR OU FUNCAO
-	// =========================================
-	// =========================================
-	// IDENTIFICADOR OU CHAMADA DE FUNÇÃO
-	// =========================================
 	if ctx.IDENT() != nil {
-
-		println("\n==============================")
-		println("[DEBUG] PARCELA UNARIO - IDENT/CHAMADA")
-		println("TEXTO:", ctx.GetText())
-		println("LINE:", ctx.GetStart().GetLine())
-		println("==============================")
 
 		nome := ctx.IDENT().GetText()
 
-		// 🔥 DEBUG IMPORTANTE
-		println("[DEBUG] IDENT ENCONTRADO:", nome)
-		println("[DEBUG] FILHOS DO NÓ:")
-		for i, c := range ctx.GetChildren() {
-			println("  child", i, "=>", c)
-		}
-
-		// =====================================
-		// DETECÇÃO DE CHAMADA (CORRETO AGORA)
-		// =====================================
 		exprs := ctx.AllExpressao()
 
-		println("[DEBUG] QTD EXPRESSOES:", len(exprs))
-
 		if ctx.ABREPAR() != nil {
-
-			println("-> CHAMADA DE FUNCAO DETECTADA")
 
 			if !j.tabela.Existe(nome) {
 				if !ErroJaReportado(nome) {
@@ -997,9 +849,6 @@ func (j *JanderSemantico) tipoParcelaUnario(
 
 			parametros := j.tabela.ObterParametros(nome)
 
-			println("[DEBUG] PARAMS ESPERADOS:", len(parametros))
-			println("[DEBUG] PARAMS RECEBIDOS:", len(exprs))
-
 			if len(parametros) != len(exprs) {
 				AdicionarErroSemantico(
 					ctx.GetStart().GetLine(),
@@ -1012,13 +861,8 @@ func (j *JanderSemantico) tipoParcelaUnario(
 
 				tipoExpr := j.tipoExpressao(expr)
 
-				println("[DEBUG] PARAM", i,
-					"ESPERADO:", parametros[i],
-					"RECEBIDO:", tipoExpr,
-				)
-
 				if !CompatibilidadeFuncao(parametros[i], tipoExpr) {
-					println("[DEBUG] ERRO DE TIPO NO PARAM", i)
+
 					AdicionarErroSemantico(
 						ctx.GetStart().GetLine(),
 						"incompatibilidade de parametros na chamada de "+nome,
@@ -1030,26 +874,15 @@ func (j *JanderSemantico) tipoParcelaUnario(
 			return j.tabela.ObterTipoRetorno(nome)
 		}
 
-		// =====================================
-		// IDENTIFICADOR SIMPLES
-		// =====================================
-		println("-> IDENTIFICADOR SIMPLES")
-
 		return j.tabela.Verificar(nome)
 	}
-	// =========================================
-	// EXPRESSAO ENTRE PARENTESES
-	// =========================================
-	if len(ctx.AllExpressao()) > 0 {
 
-		println("-> EXPRESSAO ENTRE PARENTESES")
+	if len(ctx.AllExpressao()) > 0 {
 
 		return j.tipoExpressao(
 			ctx.Expressao(0),
 		)
 	}
-
-	println("-> INVALIDO")
 
 	return INVALIDO
 
@@ -1077,7 +910,6 @@ func (j *JanderSemantico) tipoParcelaNaoUnario(ctx parser.IParcela_nao_unarioCon
 
 	if ctx.Identificador() != nil {
 		nomeBruto := ctx.Identificador().GetText()
-		//nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
 
 		if !j.tabela.Existe(nomeBruto) {
 			if !ErroJaReportado(nomeBruto) {
@@ -1094,11 +926,9 @@ func (j *JanderSemantico) tipoParcelaNaoUnario(ctx parser.IParcela_nao_unarioCon
 	return INVALIDO
 }
 
-// ================= HELPERS =================
 func (j *JanderSemantico) checkIdentificadores(t antlr.Tree) {
 	if ident, ok := t.(parser.IIdentificadorContext); ok {
 		nomeBruto := ident.GetText()
-		//nomeBase := extrairNomeBase(nomeBruto) // <-- Limpeza aplicada aqui
 
 		if !j.tabela.Existe(nomeBruto) {
 			if !ErroJaReportado(nomeBruto) {
