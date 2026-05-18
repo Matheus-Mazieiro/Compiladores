@@ -20,9 +20,15 @@ Antes de rodar o projeto, é necessário baixar e organizar as dependências:
 go mod tidy
 ```
 
-Entre no diretório do [analisador semântico](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T3/go-lexer) dentro da pasta do T3, e execute o programa:
+Entre no diretório do [analisador semântico](https://github.com/Matheus-Mazieiro/Compiladores/tree/master/T3/go-lexer) dentro da pasta do T3, e compile o programa:
 ```
-./go run main.go <arquivo_de_entrada> <arquivo_de_saida>
+go build -o <executavel> *.go
+```
+Caso `make` esteja instalado, pode executar `make build` para compilar o programa em `semantico`.
+
+Para então executar
+```
+.\<executavel> <entrada> <saida>
 ```
 
 ### Gerar gramática
@@ -42,7 +48,7 @@ Entretanto, para executar este comando em um computador que não tem make, basta
 
 ```
 go build -o semantico *.go
-java -jar ../../compiladores-corretor-automatico-1.0-SNAPSHOT-jar-with-dependencies.jar "go run main.go" gcc ../../temp ../../casos-de-teste/ "811508 821055 812050" t1
+java -jar ../../compiladores-corretor-automatico-1.0-SNAPSHOT-jar-with-dependencies.jar "go run main.go" gcc ../../temp ../../casos-de-teste/ "811508 821055 812050" t3
 
 ```
 
