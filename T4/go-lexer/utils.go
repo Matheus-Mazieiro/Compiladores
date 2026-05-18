@@ -16,6 +16,8 @@ var tiposComErro = make(map[string]bool)
 func AdicionarErroSemantico(linha int, msg string) {
 	erro := fmt.Sprintf("Linha %d: %s", linha, msg)
 	ErrosSemanticos = append(ErrosSemanticos, erro)
+	// fmt.Println(">>> ADICIONOU ERRO:", linha, msg)
+	fmt.Println(">>> ADICIONOU ERRO GLOBAL:", linha, msg)
 }
 
 func ErroJaReportado(nome string) bool {
@@ -64,7 +66,31 @@ func Compatibilidade(tipo1 TipoJander, tipo2 TipoJander) bool {
 	return false
 }
 func CompatibilidadeFuncao(tipo1 TipoJander, tipo2 TipoJander) bool {
-	return Compatibilidade(tipo1, tipo2)
+
+	// parâmetros de funções/procedimentos
+	// exigem tipos EXATOS
+
+	if tipo1 == tipo2 {
+		return true
+	}
+
+	// registros
+	if (tipo1 == REGISTRO || tipo1 == REGISTRO_TIPO) &&
+		(tipo2 == REGISTRO || tipo2 == REGISTRO_TIPO) {
+		return true
+	}
+
+	// ponteiros recebem endereço
+	if (tipo1 == PONTEIRO_INTEIRO ||
+		tipo1 == PONTEIRO_REAL ||
+		tipo1 == PONTEIRO_LITERAL ||
+		tipo1 == PONTEIRO_LOGICO) &&
+		tipo2 == ENDERECO {
+
+		return true
+	}
+
+	return false
 }
 
 func VerificarTipoBasico(ctx parser.ITipo_basicoContext) TipoJander {
@@ -410,40 +436,198 @@ func VerificarParcela(
 	)
 }
 
+// func VerificarParcelaUnario(
+// 	tabela *TabelaDeSimbolos,
+// 	ctx parser.IParcela_unarioContext,
+// ) TipoJander {
+
+// 	if ctx.NUM_INT() != nil {
+// 		return INTEIRO
+// 	}
+
+// 	if ctx.NUM_REAL() != nil {
+// 		return REAL
+// 	}
+
+// 	if ctx.Identificador() != nil {
+// 		return VerificarIdentificador(
+// 			tabela,
+// 			ctx.Identificador(),
+// 		)
+// 	}
+
+// 	if ctx.IDENT() != nil {
+// 		return tabela.ObterTipoRetorno(
+// 			ctx.IDENT().GetText(),
+// 		)
+// 	}
+
+// 	if len(ctx.AllExpressao()) > 0 {
+// 		return VerificarExpressao(
+// 			tabela,
+// 			ctx.Expressao(0),
+// 		)
+// 	}
+
+//		return INVALIDO
+//	}
 func VerificarParcelaUnario(
 	tabela *TabelaDeSimbolos,
 	ctx parser.IParcela_unarioContext,
 ) TipoJander {
 
+	println("===================================")
+	println("VERIFICAR PARCELA UNARIO")
+	println("TEXTO:", ctx.GetText())
+
+	// =====================================
+	// NUMERO INTEIRO
+	// =====================================
 	if ctx.NUM_INT() != nil {
+
+		println("-> NUM_INT")
+
 		return INTEIRO
 	}
 
+	// =====================================
+	// NUMERO REAL
+	// =====================================
 	if ctx.NUM_REAL() != nil {
+
+		println("-> NUM_REAL")
+
 		return REAL
 	}
 
+	// =====================================
+	// CHAMADA DE FUNCAO
+	// =====================================
+	if ctx.IDENT() != nil {
+
+		nome := ctx.IDENT().GetText()
+
+		println("ACHOU IDENT:", nome)
+
+		texto := ctx.GetText()
+
+		// chamada de função
+		if strings.Contains(texto, "(") {
+
+			println("-> CHAMADA DE FUNCAO")
+
+			if !tabela.Existe(nome) {
+
+				println("FUNCAO NAO EXISTE")
+
+				if !ErroJaReportado(nome) {
+
+					AdicionarErroSemantico(
+						ctx.GetStart().GetLine(),
+						"identificador "+nome+" nao declarado",
+					)
+				}
+
+				return INVALIDO
+			}
+
+			parametros := tabela.ObterParametros(nome)
+
+			println(
+				"PARAMS ESPERADOS:",
+				len(parametros),
+			)
+
+			println(
+				"PARAMS RECEBIDOS:",
+				len(ctx.AllExpressao()),
+			)
+
+			// quantidade
+			if len(parametros) != len(ctx.AllExpressao()) {
+
+				println("ERRO QUANTIDADE")
+
+				AdicionarErroSemantico(
+					ctx.GetStart().GetLine(),
+					"incompatibilidade de parametros na chamada de "+nome,
+				)
+
+				return tabela.ObterTipoRetorno(nome)
+			}
+
+			// tipos
+			for i, expr := range ctx.AllExpressao() {
+
+				tipoExpr := VerificarExpressao(
+					tabela,
+					expr,
+				)
+
+				println(
+					"PARAM",
+					i,
+					"ESPERADO:",
+					parametros[i],
+					"RECEBIDO:",
+					tipoExpr,
+				)
+
+				if !CompatibilidadeFuncao(
+					parametros[i],
+					tipoExpr,
+				) {
+
+					println("ERRO TIPO PARAM")
+
+					AdicionarErroSemantico(
+						ctx.GetStart().GetLine(),
+						"incompatibilidade de parametros na chamada de "+nome,
+					)
+
+					break
+				}
+			}
+
+			return tabela.ObterTipoRetorno(nome)
+		}
+
+		// identificador simples
+		println("-> IDENTIFICADOR SIMPLES")
+
+		return tabela.Verificar(nome)
+	}
+
+	// =====================================
+	// IDENTIFICADOR COMPLETO
+	// =====================================
 	if ctx.Identificador() != nil {
+
+		println("-> IDENTIFICADOR")
+
 		return VerificarIdentificador(
 			tabela,
 			ctx.Identificador(),
 		)
 	}
 
-	if ctx.IDENT() != nil {
-		return tabela.ObterTipoRetorno(
-			ctx.IDENT().GetText(),
-		)
-	}
-
+	// =====================================
+	// EXPRESSAO ENTRE PARENTESES
+	// =====================================
 	if len(ctx.AllExpressao()) > 0 {
+
+		println("-> EXPRESSAO ENTRE PARENTESES")
+
 		return VerificarExpressao(
 			tabela,
 			ctx.Expressao(0),
 		)
 	}
 
+	println("-> INVALIDO")
+
 	return INVALIDO
+
 }
 
 func VerificarParcelaNaoUnario(

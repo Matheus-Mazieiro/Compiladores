@@ -26,11 +26,12 @@ const (
 )
 
 type EntradaTabela struct {
-	Nome           string
-	Tipo           TipoJander
-	Parametros     []TipoJander
-	TipoRetorno    TipoJander
-	CamposRegistro map[string]TipoJander
+	Nome        string
+	Tipo        TipoJander
+	Parametros  []TipoJander
+	TipoRetorno TipoJander
+	//CamposRegistro map[string]TipoJander
+	CamposRegistro map[string]EntradaTabela
 	Dimensoes      []int
 	ValorConstante interface{}
 }
@@ -89,8 +90,8 @@ func (t *TabelaDeSimbolos) Adicionar(nome string, tipo TipoJander) {
 		Tipo: tipo,
 	}
 
-	entrada.CamposRegistro = make(map[string]TipoJander)
-
+	//entrada.CamposRegistro = make(map[string]TipoJander)
+	entrada.CamposRegistro = make(map[string]EntradaTabela)
 	escopoAtual[nome] = entrada
 }
 
@@ -112,86 +113,137 @@ func (t *TabelaDeSimbolos) AdicionarFuncao(nome string, tipoRetorno TipoJander, 
 	}
 }
 
-func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
+// func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
 
-	println("====== EXISTE ======")
-	println("BUSCANDO:", nomeCompleto)
+// 	println("====== EXISTE ======")
+// 	println("BUSCANDO:", nomeCompleto)
 
-	nome := strings.ReplaceAll(nomeCompleto, "^", "")
+// 	nome := strings.ReplaceAll(nomeCompleto, "^", "")
 
-	// remove dimensões
-	if idx := strings.Index(nome, "["); idx != -1 {
-		nome = nome[:idx]
-	}
+// 	// remove dimensões
+// 	if idx := strings.Index(nome, "["); idx != -1 {
+// 		nome = nome[:idx]
+// 	}
 
-	println("NOME LIMPO:", nome)
+// 	println("NOME LIMPO:", nome)
 
-	partes := strings.Split(nome, ".")
+// 	partes := strings.Split(nome, ".")
 
-	nomeBase := partes[0]
+// 	nomeBase := partes[0]
 
-	println("NOME BASE:", nomeBase)
+// 	println("NOME BASE:", nomeBase)
 
-	for i := len(t.escopos) - 1; i >= 0; i-- {
+// 	for i := len(t.escopos) - 1; i >= 0; i-- {
 
-		println("ESCOPO:", i)
+// 		println("ESCOPO:", i)
 
-		for k, entrada := range t.escopos[i] {
+// 		for k, entrada := range t.escopos[i] {
 
-			println("  TESTANDO:", k)
+// 			println("  TESTANDO:", k)
 
-			if k == nomeBase {
+// 			if k == nomeBase {
 
-				println("  ENCONTROU BASE:", k)
+// 				println("  ENCONTROU BASE:", k)
 
-				// identificador simples
-				if len(partes) == 1 {
+// 				// identificador simples
+// 				if len(partes) == 1 {
 
-					println("  EXISTE SIMPLES OK")
-					return true
-				}
+// 					println("  EXISTE SIMPLES OK")
+// 					return true
+// 				}
 
-				// acesso campo registro
-				campo := partes[1]
+// 				// acesso campo registro
+// 				campo := partes[1]
 
-				println("  BUSCANDO CAMPO:", campo)
+// 				println("  BUSCANDO CAMPO:", campo)
 
-				if entrada.CamposRegistro == nil {
+// 				if entrada.CamposRegistro == nil {
 
-					println("  CAMPOS NIL")
-					return false
-				}
+// 					println("  CAMPOS NIL")
+// 					return false
+// 				}
 
-				println("  CAMPOS DISPONIVEIS:")
+// 				println("  CAMPOS DISPONIVEIS:")
 
-				for c := range entrada.CamposRegistro {
-					println("   ->", c)
-				}
+// 				for c := range entrada.CamposRegistro {
+// 					println("   ->", c)
+// 				}
 
-				_, ok := entrada.CamposRegistro[campo]
+// 				_, ok := entrada.CamposRegistro[campo]
 
-				if ok {
-					println("  CAMPO ENCONTRADO")
-				} else {
-					println("  CAMPO NAO ENCONTRADO")
-				}
-				println("CAMPO BUSCADO:", campo)
+// 				if ok {
+// 					println("  CAMPO ENCONTRADO")
+// 				} else {
+// 					println("  CAMPO NAO ENCONTRADO")
+// 				}
+// 				println("CAMPO BUSCADO:", campo)
 
-				for c := range entrada.CamposRegistro {
-					println("CAMPO REAL:", c)
-				}
-				return ok
-			}
-		}
-	}
+// 				for c := range entrada.CamposRegistro {
+// 					println("CAMPO REAL:", c)
+// 				}
+// 				return ok
+// 			}
+// 		}
+// 	}
 
-	println("NAO ENCONTROU:", nomeCompleto)
-	return false
-}
+// 	println("NAO ENCONTROU:", nomeCompleto)
+// 	return false
+// }
 func (t *TabelaDeSimbolos) Verificar(nomeCompleto string) TipoJander {
 
-	println("====== VERIFICAR ======")
-	println("VERIFICANDO:", nomeCompleto)
+	nome := strings.ReplaceAll(nomeCompleto, "^", "")
+
+	if idx := strings.Index(nome, "["); idx != -1 {
+		nome = nome[:idx]
+	}
+
+	partes := strings.Split(nome, ".")
+
+	if len(partes) == 0 {
+		return INVALIDO
+	}
+
+	// procura variável base
+	var entradaAtual EntradaTabela
+	encontrou := false
+
+	for i := len(t.escopos) - 1; i >= 0; i-- {
+
+		if entrada, ok := t.escopos[i][partes[0]]; ok {
+			entradaAtual = entrada
+			encontrou = true
+			break
+		}
+	}
+
+	if !encontrou {
+		return INVALIDO
+	}
+
+	// variável simples
+	if len(partes) == 1 {
+		return entradaAtual.Tipo
+	}
+
+	// percorre campos aninhados
+	for i := 1; i < len(partes); i++ {
+
+		if entradaAtual.CamposRegistro == nil {
+			return INVALIDO
+		}
+
+		prox, ok := entradaAtual.CamposRegistro[partes[i]]
+
+		if !ok {
+			return INVALIDO
+		}
+
+		entradaAtual = prox
+	}
+
+	return entradaAtual.Tipo
+}
+func (t *TabelaDeSimbolos) Existe(nomeCompleto string) bool {
 
 	nome := strings.ReplaceAll(nomeCompleto, "^", "")
 
@@ -199,70 +251,119 @@ func (t *TabelaDeSimbolos) Verificar(nomeCompleto string) TipoJander {
 		nome = nome[:idx]
 	}
 
-	println("NOME LIMPO:", nome)
-
 	partes := strings.Split(nome, ".")
 
-	nomeBase := partes[0]
+	if len(partes) == 0 {
+		return false
+	}
 
-	println("NOME BASE:", nomeBase)
+	var entradaAtual EntradaTabela
+	encontrou := false
 
 	for i := len(t.escopos) - 1; i >= 0; i-- {
 
-		println("ESCOPO:", i)
-
-		for k, entrada := range t.escopos[i] {
-
-			println("  TESTANDO:", k)
-
-			if k == nomeBase {
-
-				println("  ENCONTROU BASE:", k)
-
-				// variável simples
-				if len(partes) == 1 {
-
-					println("  RETORNANDO TIPO:", entrada.Tipo)
-
-					return entrada.Tipo
-				}
-
-				// campo registro
-				campo := partes[1]
-
-				println("  BUSCANDO CAMPO:", campo)
-
-				if entrada.CamposRegistro == nil {
-
-					println("  CAMPOS NIL")
-					return INVALIDO
-				}
-
-				println("  CAMPOS DISPONIVEIS:")
-
-				for c, tp := range entrada.CamposRegistro {
-					println("   ->", c, "TIPO:", tp)
-				}
-
-				tipoCampo, ok := entrada.CamposRegistro[campo]
-
-				if !ok {
-
-					println("  CAMPO NAO ENCONTRADO")
-					return INVALIDO
-				}
-
-				println("  CAMPO ENCONTRADO TIPO:", tipoCampo)
-
-				return tipoCampo
-			}
+		if entrada, ok := t.escopos[i][partes[0]]; ok {
+			entradaAtual = entrada
+			encontrou = true
+			break
 		}
 	}
 
-	println("TIPO INVALIDO:", nomeCompleto)
+	if !encontrou {
+		return false
+	}
 
-	return INVALIDO
+	if len(partes) == 1 {
+		return true
+	}
+
+	for i := 1; i < len(partes); i++ {
+
+		if entradaAtual.CamposRegistro == nil {
+			return false
+		}
+
+		prox, ok := entradaAtual.CamposRegistro[partes[i]]
+
+		if !ok {
+			return false
+		}
+
+		entradaAtual = prox
+	}
+
+	return true
 }
+
+// func (t *TabelaDeSimbolos) Verificar(nomeCompleto string) TipoJander {
+
+// 	println("====== VERIFICAR ======")
+// 	println("VERIFICANDO:", nomeCompleto)
+
+// 	nome := strings.ReplaceAll(nomeCompleto, "^", "")
+
+// 	if idx := strings.Index(nome, "["); idx != -1 {
+// 		nome = nome[:idx]
+// 	}
+
+// 	println("NOME LIMPO:", nome)
+
+// 	partes := strings.Split(nome, ".")
+
+// 	nomeBase := partes[0]
+
+// 	println("NOME BASE:", nomeBase)
+
+// 	for i := len(t.escopos) - 1; i >= 0; i-- {
+
+// 		println("ESCOPO:", i)
+
+// 		for k, entrada := range t.escopos[i] {
+
+// 			println("  TESTANDO:", k)
+
+// 			if k == nomeBase {
+
+// 				println("  ENCONTROU BASE:", k)
+
+// 				// variável simples
+// 				if len(partes) == 1 {
+
+// 					println("  RETORNANDO TIPO:", entrada.Tipo)
+
+// 					return entrada.Tipo
+// 				}
+
+// 				// campo registro
+// 				campo := partes[1]
+
+// 				println("  BUSCANDO CAMPO:", campo)
+
+// 				if entrada.CamposRegistro == nil {
+
+// 					println("  CAMPOS NIL")
+// 					return INVALIDO
+// 				}
+
+// 				entradaCampo, ok := entrada.CamposRegistro[campo]
+
+// 				if !ok {
+
+// 					println("  CAMPO NAO ENCONTRADO")
+// 					return INVALIDO
+// 				}
+
+// 				println("  CAMPO ENCONTRADO TIPO:", entradaCampo.Tipo)
+
+// 				return entradaCampo.Tipo
+// 			}
+// 		}
+// 	}
+
+// 	println("TIPO INVALIDO:", nomeCompleto)
+
+// 	return INVALIDO
+// }
 func (t *TabelaDeSimbolos) DebugTabela() {
 	println("======= TABELA =======")
 
@@ -276,12 +377,11 @@ func (t *TabelaDeSimbolos) DebugTabela() {
 			println("  Tipo:", entrada.Tipo)
 
 			if entrada.CamposRegistro != nil {
+			}
 
-				println("  Campos:")
+			for c, campoEntrada := range entrada.CamposRegistro {
+				println("   ->", c, "Tipo:", campoEntrada.Tipo)
 
-				for campo, tipo := range entrada.CamposRegistro {
-					println("   -", campo, "=>", tipo)
-				}
 			}
 		}
 	}
@@ -351,7 +451,7 @@ func (t *TabelaDeSimbolos) AdicionarArray(
 func (t *TabelaDeSimbolos) AdicionarCampoRegistro(
 	nomeRegistro string,
 	campo string,
-	tipo TipoJander,
+	entradaCampo EntradaTabela,
 ) {
 
 	//nomeRegistro = normalizar(nomeRegistro)
@@ -362,7 +462,7 @@ func (t *TabelaDeSimbolos) AdicionarCampoRegistro(
 		if entrada, ok := t.escopos[i][nomeRegistro]; ok {
 
 			if entrada.CamposRegistro == nil {
-				entrada.CamposRegistro = make(map[string]TipoJander)
+				entrada.CamposRegistro = make(map[string]EntradaTabela)
 			}
 			println(
 				"ADICIONANDO CAMPO:",
@@ -371,14 +471,14 @@ func (t *TabelaDeSimbolos) AdicionarCampoRegistro(
 				campo,
 			)
 
-			entrada.CamposRegistro[campo] = tipo
-
+			//entrada.CamposRegistro[campo] = tipo
+			entrada.CamposRegistro[campo] = entradaCampo
 			println("CAMPOS AGORA:")
 
 			for c := range entrada.CamposRegistro {
 				println(" ->", c)
 			}
-			entrada.CamposRegistro[campo] = tipo
+			entrada.CamposRegistro[campo] = entradaCampo
 			t.escopos[i][nomeRegistro] = entrada
 			return
 		}
