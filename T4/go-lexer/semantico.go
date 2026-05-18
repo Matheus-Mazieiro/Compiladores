@@ -553,6 +553,11 @@ func (j *JanderSemantico) VisitCmdEscreva(
 ) interface{} {
 
 	for _, expr := range ctx.AllExpressao() {
+
+		// força análise semântica completa
+		j.tipoExpressao(expr)
+
+		// mantém checagem de identificadores
 		j.checkIdentificadores(expr.(antlr.Tree))
 	}
 
@@ -976,7 +981,7 @@ func (j *JanderSemantico) tipoParcelaUnario(
 
 		println("[DEBUG] QTD EXPRESSOES:", len(exprs))
 
-		if len(exprs) > 0 {
+		if ctx.ABREPAR() != nil {
 
 			println("-> CHAMADA DE FUNCAO DETECTADA")
 
