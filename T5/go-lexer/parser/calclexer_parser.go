@@ -4630,14 +4630,32 @@ type ICmdSeContext interface {
 	// GetParser returns the parser.
 	GetParser() antlr.Parser
 
+	// Get_cmd returns the _cmd rule contexts.
+	Get_cmd() ICmdContext
+
+	// Set_cmd sets the _cmd rule contexts.
+	Set_cmd(ICmdContext)
+
+	// GetCmdEntao returns the cmdEntao rule context list.
+	GetCmdEntao() []ICmdContext
+
+	// GetCmdSenao returns the cmdSenao rule context list.
+	GetCmdSenao() []ICmdContext
+
+	// SetCmdEntao sets the cmdEntao rule context list.
+	SetCmdEntao([]ICmdContext)
+
+	// SetCmdSenao sets the cmdSenao rule context list.
+	SetCmdSenao([]ICmdContext)
+
 	// Getter signatures
 	SE() antlr.TerminalNode
 	Expressao() IExpressaoContext
 	ENTAO() antlr.TerminalNode
 	FIM_SE() antlr.TerminalNode
+	SENAO() antlr.TerminalNode
 	AllCmd() []ICmdContext
 	Cmd(i int) ICmdContext
-	SENAO() antlr.TerminalNode
 
 	// IsCmdSeContext differentiates from other interfaces.
 	IsCmdSeContext()
@@ -4645,7 +4663,10 @@ type ICmdSeContext interface {
 
 type CmdSeContext struct {
 	antlr.BaseParserRuleContext
-	parser antlr.Parser
+	parser   antlr.Parser
+	_cmd     ICmdContext
+	cmdEntao []ICmdContext
+	cmdSenao []ICmdContext
 }
 
 func NewEmptyCmdSeContext() *CmdSeContext {
@@ -4675,6 +4696,18 @@ func NewCmdSeContext(parser antlr.Parser, parent antlr.ParserRuleContext, invoki
 
 func (s *CmdSeContext) GetParser() antlr.Parser { return s.parser }
 
+func (s *CmdSeContext) Get_cmd() ICmdContext { return s._cmd }
+
+func (s *CmdSeContext) Set_cmd(v ICmdContext) { s._cmd = v }
+
+func (s *CmdSeContext) GetCmdEntao() []ICmdContext { return s.cmdEntao }
+
+func (s *CmdSeContext) GetCmdSenao() []ICmdContext { return s.cmdSenao }
+
+func (s *CmdSeContext) SetCmdEntao(v []ICmdContext) { s.cmdEntao = v }
+
+func (s *CmdSeContext) SetCmdSenao(v []ICmdContext) { s.cmdSenao = v }
+
 func (s *CmdSeContext) SE() antlr.TerminalNode {
 	return s.GetToken(CalcLexerParserSE, 0)
 }
@@ -4701,6 +4734,10 @@ func (s *CmdSeContext) ENTAO() antlr.TerminalNode {
 
 func (s *CmdSeContext) FIM_SE() antlr.TerminalNode {
 	return s.GetToken(CalcLexerParserFIM_SE, 0)
+}
+
+func (s *CmdSeContext) SENAO() antlr.TerminalNode {
+	return s.GetToken(CalcLexerParserSENAO, 0)
 }
 
 func (s *CmdSeContext) AllCmd() []ICmdContext {
@@ -4742,10 +4779,6 @@ func (s *CmdSeContext) Cmd(i int) ICmdContext {
 	}
 
 	return t.(ICmdContext)
-}
-
-func (s *CmdSeContext) SENAO() antlr.TerminalNode {
-	return s.GetToken(CalcLexerParserSENAO, 0)
 }
 
 func (s *CmdSeContext) GetRuleContext() antlr.RuleContext {
@@ -4814,8 +4847,12 @@ func (p *CalcLexerParser) CmdSe() (localctx ICmdSeContext) {
 	for (int64((_la-15)) & ^0x3f) == 0 && ((int64(1)<<(_la-15))&1125900444410161) != 0 {
 		{
 			p.SetState(310)
-			p.Cmd()
+
+			var _x = p.Cmd()
+
+			localctx.(*CmdSeContext)._cmd = _x
 		}
+		localctx.(*CmdSeContext).cmdEntao = append(localctx.(*CmdSeContext).cmdEntao, localctx.(*CmdSeContext)._cmd)
 
 		p.SetState(315)
 		p.GetErrorHandler().Sync(p)
@@ -4850,8 +4887,12 @@ func (p *CalcLexerParser) CmdSe() (localctx ICmdSeContext) {
 		for (int64((_la-15)) & ^0x3f) == 0 && ((int64(1)<<(_la-15))&1125900444410161) != 0 {
 			{
 				p.SetState(317)
-				p.Cmd()
+
+				var _x = p.Cmd()
+
+				localctx.(*CmdSeContext)._cmd = _x
 			}
+			localctx.(*CmdSeContext).cmdSenao = append(localctx.(*CmdSeContext).cmdSenao, localctx.(*CmdSeContext)._cmd)
 
 			p.SetState(322)
 			p.GetErrorHandler().Sync(p)
@@ -5440,6 +5481,18 @@ type ICmdEnquantoContext interface {
 	// GetParser returns the parser.
 	GetParser() antlr.Parser
 
+	// Get_cmd returns the _cmd rule contexts.
+	Get_cmd() ICmdContext
+
+	// Set_cmd sets the _cmd rule contexts.
+	Set_cmd(ICmdContext)
+
+	// GetCmds returns the cmds rule context list.
+	GetCmds() []ICmdContext
+
+	// SetCmds sets the cmds rule context list.
+	SetCmds([]ICmdContext)
+
 	// Getter signatures
 	ENQUANTO() antlr.TerminalNode
 	Expressao() IExpressaoContext
@@ -5455,6 +5508,8 @@ type ICmdEnquantoContext interface {
 type CmdEnquantoContext struct {
 	antlr.BaseParserRuleContext
 	parser antlr.Parser
+	_cmd   ICmdContext
+	cmds   []ICmdContext
 }
 
 func NewEmptyCmdEnquantoContext() *CmdEnquantoContext {
@@ -5483,6 +5538,14 @@ func NewCmdEnquantoContext(parser antlr.Parser, parent antlr.ParserRuleContext, 
 }
 
 func (s *CmdEnquantoContext) GetParser() antlr.Parser { return s.parser }
+
+func (s *CmdEnquantoContext) Get_cmd() ICmdContext { return s._cmd }
+
+func (s *CmdEnquantoContext) Set_cmd(v ICmdContext) { s._cmd = v }
+
+func (s *CmdEnquantoContext) GetCmds() []ICmdContext { return s.cmds }
+
+func (s *CmdEnquantoContext) SetCmds(v []ICmdContext) { s.cmds = v }
 
 func (s *CmdEnquantoContext) ENQUANTO() antlr.TerminalNode {
 	return s.GetToken(CalcLexerParserENQUANTO, 0)
@@ -5619,8 +5682,12 @@ func (p *CalcLexerParser) CmdEnquanto() (localctx ICmdEnquantoContext) {
 	for (int64((_la-15)) & ^0x3f) == 0 && ((int64(1)<<(_la-15))&1125900444410161) != 0 {
 		{
 			p.SetState(360)
-			p.Cmd()
+
+			var _x = p.Cmd()
+
+			localctx.(*CmdEnquantoContext)._cmd = _x
 		}
+		localctx.(*CmdEnquantoContext).cmds = append(localctx.(*CmdEnquantoContext).cmds, localctx.(*CmdEnquantoContext)._cmd)
 
 		p.SetState(365)
 		p.GetErrorHandler().Sync(p)

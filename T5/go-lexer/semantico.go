@@ -35,7 +35,8 @@ func (j *JanderSemantico) VisitPrograma(ctx *parser.ProgramaContext) interface{}
 	return nil
 }
 
-// visitdeclaracoes é o método de visita para o nó de declarações, onde cada declaração local ou global é visitada para realizar a análise semântica das declarações do programa.
+// visitdeclaracoes é o método de visita para o nó de declarações,
+// onde cada declaração local ou global é visitada para realizar a análise semântica das declarações do programa.
 func (j *JanderSemantico) VisitDeclaracoes(ctx *parser.DeclaracoesContext) interface{} {
 	for _, d := range ctx.AllDecl_local_global() {
 		d.Accept(j)
@@ -44,7 +45,9 @@ func (j *JanderSemantico) VisitDeclaracoes(ctx *parser.DeclaracoesContext) inter
 	return nil
 }
 
-// VisitDecl_local_global é o método de visita para o nó de declaração local ou global, onde as declarações locais e globais são processadas para verificar a validade das declarações e atualizar a tabela de símbolos conforme necessário.
+// VisitDecl_local_global é o método de visita para o nó de declaração local ou global,
+//
+//	onde as declarações locais e globais são processadas para verificar a validade das declarações e atualizar a tabela de símbolos conforme necessário.
 func (j *JanderSemantico) VisitDecl_local_global(ctx *parser.Decl_local_globalContext) interface{} {
 
 	if ctx.Declaracao_local() != nil {
@@ -58,7 +61,8 @@ func (j *JanderSemantico) VisitDecl_local_global(ctx *parser.Decl_local_globalCo
 	return nil
 }
 
-// visitcorpo é o método de visita para o nó de corpo do programa, onde as declarações locais e os comandos dentro do corpo são visitados para realizar a análise semântica das operações e estruturas de controle presentes no programa.
+// visitcorpo é o método de visita para o nó de corpo do programa,
+// onde as declarações locais e os comandos dentro do corpo são visitados para realizar a análise semântica das operações e estruturas de controle presentes no programa.
 func (j *JanderSemantico) VisitCorpo(ctx *parser.CorpoContext) interface{} {
 
 	for _, d := range ctx.AllDeclaracao_local() {
@@ -72,7 +76,8 @@ func (j *JanderSemantico) VisitCorpo(ctx *parser.CorpoContext) interface{} {
 	return nil
 }
 
-// visitdecrlaracao_local é o método de visita para o nó de declaração local, onde as variáveis, constantes e tipos locais são processados para verificar a validade das declarações e atualizar a tabela de símbolos conforme necessário.
+// visitdecrlaracao_local é o método de visita para o nó de declaração local,
+// onde as variáveis, constantes e tipos locais são processados para verificar a validade das declarações e atualizar a tabela de símbolos conforme necessário.
 func (j *JanderSemantico) VisitDeclaracao_local(ctx *parser.Declaracao_localContext) interface{} {
 
 	if ctx.Variavel() != nil {
@@ -150,7 +155,9 @@ func (j *JanderSemantico) VisitDeclaracao_local(ctx *parser.Declaracao_localCont
 	return nil
 }
 
-// VisitVariavel é o método de visita para o nó de declaração de variável, onde as variáveis são processadas para verificar a validade das declarações, atualizar a tabela de símbolos e lidar com casos específicos como registros e tipos estendidos.
+// VisitVariavel é o método de visita para o nó de declaração de variável,
+// onde as variáveis são processadas para verificar a validade das declarações,
+// atualizar a tabela de símbolos e lidar com casos específicos como registros e tipos estendidos.
 func (j *JanderSemantico) VisitVariavel(
 	ctx *parser.VariavelContext,
 ) interface{} {
@@ -231,7 +238,13 @@ func (j *JanderSemantico) VisitVariavel(
 	return nil
 }
 
-// VisitDeclaracao_global é o método de visita para o nó de declaração global, onde as funções e procedimentos são processados para verificar a validade das declarações, atualizar a tabela de símbolos, criar novos escopos para os corpos das funções e procedimentos e realizar a análise semântica dos parâmetros, corpo e comandos associados.
+// VisitDeclaracao_global é o método de visita para o nó de declaração global,
+//
+//	onde as funções e procedimentos são processados para verificar a validade das declarações,
+//
+// atualizar a tabela de símbolos, criar novos escopos para os corpos das funções e procedimentos e realizar a análise semântica dos parâmetros,
+//
+//	corpo e comandos associados.
 func (j *JanderSemantico) VisitDeclaracao_global(
 	ctx *parser.Declaracao_globalContext,
 ) interface{} {
@@ -401,7 +414,10 @@ func (j *JanderSemantico) VisitParametro(
 	return nil
 }
 
-// VisitCmd é o método de visita para o nó de comando, onde os diferentes tipos de comandos são processados para verificar a validade das operações, atualizar a tabela de símbolos conforme necessário e realizar a análise semântica dos comandos presentes no programa.
+// VisitCmd é o método de visita para o nó de comando,
+// onde os diferentes tipos de comandos são processados para verificar a validade das operações,
+//
+//	atualizar a tabela de símbolos conforme necessário e realizar a análise semântica dos comandos presentes no programa.
 func (j *JanderSemantico) VisitCmd(ctx *parser.CmdContext) interface{} {
 
 	if ctx.CmdChamada() != nil {
@@ -436,7 +452,9 @@ func (j *JanderSemantico) VisitCmd(ctx *parser.CmdContext) interface{} {
 	return j.VisitChildren(ctx)
 }
 
-// VisitCmdLeia é o método de visita para o nó de comando de leitura, onde os identificadores envolvidos na leitura são processados para verificar se estão declarados na tabela de símbolos e reportar erros semânticos caso contrário.
+// VisitCmdLeia é o método de visita para o nó de comando de leitura,
+// onde os identificadores envolvidos na leitura são processados para verificar
+// se estão declarados na tabela de símbolos e reportar erros semânticos caso contrário.
 func (j *JanderSemantico) VisitCmdLeia(
 	ctx *parser.CmdLeiaContext,
 ) interface{} {
@@ -461,7 +479,9 @@ func (j *JanderSemantico) VisitCmdLeia(
 	return nil
 }
 
-// VisitCmdFaca é o método de visita para o nó de comando de faça, onde os comandos dentro do bloco de faça são processados para realizar a análise semântica dos comandos e a expressão de condição associada ao comando de faça.
+// VisitCmdFaca é o método de visita para o nó de comando de faça,
+// onde os comandos dentro do bloco de faça são processados para realizar a análise
+// semântica dos comandos e a expressão de condição associada ao comando de faça.
 func (j *JanderSemantico) VisitCmdFaca(
 	ctx *parser.CmdFacaContext,
 ) interface{} {
@@ -502,7 +522,9 @@ func (j *JanderSemantico) VisitCmdEscreva(
 	return nil
 }
 
-// visitcmdse é o método de visita para o nó de comando de seleção (se), onde a expressão de condição e os comandos associados aos blocos de então e senao são processados para realizar a análise semântica das estruturas de controle presentes no programa.
+// visitcmdse é o método de visita para o nó de comando de seleção (se),
+// onde a expressão de condição e os comandos associados aos blocos de então
+// e senao são processados para realizar a análise semântica das estruturas de controle presentes no programa.
 func (j *JanderSemantico) VisitCmdSe(
 	ctx *parser.CmdSeContext,
 ) interface{} {

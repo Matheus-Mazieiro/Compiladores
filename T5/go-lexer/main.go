@@ -139,14 +139,12 @@ func main() {
 	// GERAÇÃO DE CÓDIGO C
 	// =========================
 
-	gerador := NewJanderGerador(
+	gerador := NewGerador(
 		sem.tabela,
 	)
 
-	codigoC := gerador.Gerar(
-		tree.(*parser.ProgramaContext),
-	)
-
+	codigoC := tree.Accept(gerador)
+	fmt.Println("GERADOR EXECUTOU")
 	// =========================
 	// ESCREVE C NO ARQUIVO
 	// =========================

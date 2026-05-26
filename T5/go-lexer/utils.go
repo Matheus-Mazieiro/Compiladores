@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	parser "go-lexer/parser"
+	"strconv"
 	"strings"
 )
 
@@ -416,4 +417,102 @@ func VerificarParcelaNaoUnario(tabela *TabelaDeSimbolos, ctx parser.IParcela_nao
 	}
 
 	return INVALIDO
+}
+
+// T5-------------------------------------
+func (g *Gerador) emitln(s string) {
+	g.saida.WriteString(
+		strings.Repeat("\t", g.indent),
+	)
+
+	g.saida.WriteString(s)
+	g.saida.WriteString("\n")
+}
+
+func mapTipoLAParaC(tipo string) string {
+
+	switch tipo {
+
+	case "inteiro":
+		return "int"
+
+	case "real":
+		return "double"
+
+	case "literal":
+		return "char"
+
+	case "logico":
+		return "int"
+
+	default:
+		return tipo
+	}
+}
+
+func mapTipoContextoParaC(
+	ctx parser.ITipoContext,
+) string {
+
+	if ctx == nil {
+		return "void"
+	}
+
+	return mapTipoLAParaC(ctx.GetText())
+}
+
+func mapTipoEstendidoParaC(
+	ctx parser.ITipo_estendidoContext,
+) string {
+
+	if ctx == nil {
+		return "int"
+	}
+
+	base := ctx.Tipo_basico_ident().GetText()
+
+	var tipoBase string
+
+	switch base {
+
+	case "inteiro":
+		tipoBase = "int"
+
+	case "real":
+		tipoBase = "double"
+
+	case "literal":
+		tipoBase = "char"
+
+	case "logico":
+		tipoBase = "int"
+
+	default:
+		tipoBase = base
+	}
+
+	// ponteiro
+	if ctx.PONTEIRO() != nil {
+
+		// char* já é string em C
+		if tipoBase == "char" {
+			return "char*"
+		}
+
+		return tipoBase + " *"
+	}
+
+	return tipoBase
+}
+
+func atoi(s string) int {
+
+	v, _ := strconv.Atoi(s)
+
+	return v
+}
+
+func itoa(v int) string {
+
+	return strconv.Itoa(v)
 }
