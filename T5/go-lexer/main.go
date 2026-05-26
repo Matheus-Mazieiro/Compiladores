@@ -1,4 +1,3 @@
-// LEMBRAR DE TIRAR PRINTFS DE DEBUG ANTES DE ENTREGAR O TRABALHO
 package main
 
 import (
@@ -10,43 +9,145 @@ import (
 )
 
 func main() {
+
+	// =========================
+	// VALIDA ARGUMENTOS
+	// =========================
+
 	if len(os.Args) < 3 {
-		fmt.Println("Uso: go run main.go entrada.txt saida.txt")
+
+		fmt.Println(
+			"Uso: go run main.go entrada.txt saida.txt",
+		)
+
 		return
 	}
 
-	input, _ := antlr.NewFileStream(os.Args[1])
-	output, _ := os.Create(os.Args[2])
-	defer output.Close()
+	arquivoEntrada := os.Args[1]
+	arquivoSaida := os.Args[2]
 
-	// LEXER
-	lex := parser.NewCalcLexerLexer(input)
-	lex.RemoveErrorListeners()
-	lex.AddErrorListener(NewErrorListener(output))
+	// =========================
+	// ABRE ENTRADA
+	// =========================
 
-	// TOKENS
-	tokens := antlr.NewCommonTokenStream(lex, antlr.TokenDefaultChannel)
+	input, err := antlr.NewFileStream(
+		arquivoEntrada,
+	)
 
-	// PARSER
-	p := parser.NewCalcLexerParser(tokens)
-	p.RemoveErrorListeners()
-	p.AddErrorListener(NewErrorListener(output))
+	if err != nil {
 
-	// PARSE TREE
-	tree := p.Programa()
+		fmt.Println(
+			"Erro ao abrir arquivo de entrada",
+		)
 
-	// SEMÂNTICO
-	sem := NewJanderSemantico()
-	tree.Accept(sem)
-
-	// SAÍDA
-	if len(ErrosSemanticos) > 0 {
-		for _, e := range ErrosSemanticos {
-			fmt.Fprintln(output, e)
-		}
-	} else {
-		fmt.Fprintln(output, "Nenhum erro semantico encontrado.")
+		return
 	}
 
-	fmt.Fprintln(output, "Fim da compilacao")
+	// =========================
+	// CRIA SAÍDA
+	// =========================
+
+	output, err := os.Create(
+		arquivoSaida,
+	)
+
+	if err != nil {
+
+		fmt.Println(
+			"Erro ao criar arquivo de saida",
+		)
+
+		return
+	}
+
+	defer output.Close()
+
+	// =========================
+	// LIMPA ERROS
+	// =========================
+
+	ResetarErros()
+
+	// =========================
+	// LEXER
+	// =========================
+
+	lex := parser.NewCalcLexerLexer(input)
+
+	lex.RemoveErrorListeners()
+
+	lex.AddErrorListener(
+		NewErrorListener(output),
+	)
+
+	// =========================
+	// TOKENS
+	// =========================
+
+	tokens := antlr.NewCommonTokenStream(
+		lex,
+		antlr.TokenDefaultChannel,
+	)
+
+	// =========================
+	// PARSER
+	// =========================
+
+	p := parser.NewCalcLexerParser(tokens)
+
+	p.RemoveErrorListeners()
+
+	p.AddErrorListener(
+		NewErrorListener(output),
+	)
+
+	// =========================
+	// ÁRVORE SINTÁTICA
+	// =========================
+
+	tree := p.Programa()
+
+	// =========================
+	// ANÁLISE SEMÂNTICA
+	// =========================
+
+	sem := NewJanderSemantico()
+
+	tree.Accept(sem)
+
+	// =========================
+	// SE TIVER ERROS:
+	// imprime erros e encerra
+	// =========================
+
+	if len(ErrosSemanticos) > 0 {
+
+		for _, e := range ErrosSemanticos {
+
+			fmt.Fprintln(output, e)
+		}
+
+		fmt.Fprintln(
+			output,
+			"Fim da compilacao",
+		)
+
+		return
+	}
+
+	// =========================
+	// GERAÇÃO DE CÓDIGO C
+	// =========================
+
+	gerador := NewGerador(
+		sem.tabela,
+	)
+
+	codigoC := tree.Accept(gerador)
+	fmt.Println("GERADOR EXECUTOU")
+	// =========================
+	// ESCREVE C NO ARQUIVO
+	// =========================
+
+	fmt.Fprint(output, codigoC)
 }

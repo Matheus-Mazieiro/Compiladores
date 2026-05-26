@@ -23,10 +23,22 @@ parametro : VAR? identificador (VIRG identificador)* DOIS_PONTOS tipo_estendido 
 cmd : cmdLeia | cmdEscreva | cmdSe | cmdCaso | cmdPara | cmdEnquanto | cmdFaca | cmdAtribuicao | cmdChamada | cmdRetorne;
 cmdLeia : LEIA ABREPAR PONTEIRO? identificador (VIRG PONTEIRO? identificador)* FECHAPAR ;
 cmdEscreva : ESCREVA ABREPAR expressao (VIRG expressao)* FECHAPAR ;
-cmdSe : SE expressao ENTAO cmd* (SENAO cmd*)? FIM_SE ;
+cmdSe
+    : SE expressao ENTAO
+        cmdEntao+=cmd*
+      (
+        SENAO
+        cmdSenao+=cmd*
+      )?
+      FIM_SE
+    ;
 cmdCaso : CASO exp_aritmetica SEJA selecao (SENAO cmd*)? FIM_CASO ;
 cmdPara : PARA IDENT ATRIB exp_aritmetica ATE exp_aritmetica FACA cmd* FIM_PARA ;
-cmdEnquanto : ENQUANTO expressao FACA cmd* FIM_ENQUANTO ;
+cmdEnquanto
+    : ENQUANTO expressao FACA
+        cmds+=cmd*
+      FIM_ENQUANTO
+    ;
 cmdFaca : FACA cmd* ATE expressao ;
 cmdAtribuicao: PONTEIRO? identificador ATRIB expressao;
 cmdChamada: IDENT ABREPAR (expressao (VIRG expressao)*)? FECHAPAR;
@@ -114,13 +126,19 @@ NUM_REAL: [0-9]+ '.' [0-9]+;
 IDENT: [a-zA-Z_][a-zA-Z_0-9]*;
 
 //Expressão regular para cadeia de caracteres
-CADEIA 	: '"' ( ESC_SEQ | ~('\''|'\\'|'"'|'\n') )* '"';
+CADEIA
+    : '"' ( ESC_SEQ | ~('\\'|'"'|'\n') )* '"'
+    ;
 fragment
-ESC_SEQ	: '\\\'';
+ESC_SEQ
+    : '\\' [btnr"\\]
+    ;
 
 //Define regra para capturar erro de cadeia : não encontra aspas de fechamento, mas sim um \n
-ERRO_CADEIA:  '"' ( ESC_SEQ | ~('\''|'\\'|'"'| '\n') )* '\n';
-
+ERRO_CADEIA
+    : '"' ( ESC_SEQ | ~('\\'|'"'|'\n') )* '\n'
+    ;
+    
 // Ignora espaços e comentários
 WS: [ \t\r\n]+ -> skip;
 COMENTARIO: '{' ( ~'\n' )*? '}' -> skip;
