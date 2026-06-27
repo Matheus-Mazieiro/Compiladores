@@ -2,6 +2,7 @@
 Este projeto é parte do trabalho da disciplina de Compiladores na UFSCar, orientado pelo Prof. Jander. O objetivo é implementar, em etapas, um compilador para a linguagem LA (Linguagem Algorítmica), desenvolvida no âmbito do DC/UFSCar.
 
 ## T5 — Gerador de Código
+Nesta etapa desenvolvemos um gerador de código para a linguagem LA (Linguagem Algorítmica) desenvolvida pelo prof. Jander, no âmbito do DC/UFSCar. O gerador de código deverá produzir código executável em C equivalente ao programa de entrada.
 
 
 ### Tecnologias Utilizadas
@@ -34,6 +35,10 @@ Para então executar
 Para gerar novas gramáticas, basta escrever a gramática em CalcLexer.g4 e executar o comando gen do Makefile presente em T5/go-lexer
 ```
 make gen
+```
+Entretanto, para executar este comando em um computador que não tem make, basta executar diretamente
+```
+java -jar ../../antlr-4.13.2-complete.jar -Dlanguage=Go -o parser CalcLexer.g4 
 ```
 
 ### Rodar os testes
