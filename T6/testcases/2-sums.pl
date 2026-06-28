@@ -21,5 +21,3 @@ subject to
         sum(j in J)
             x[i,j]
         <= 2
-
-end

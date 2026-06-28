@@ -15,5 +15,3 @@ subject to
             sum(j in J)
                 x[i,j]
             <= 1
-
-end

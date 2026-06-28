@@ -14,5 +14,3 @@ subtour(S subsetof V):
     sum(i in S, j in V-S)
         x[i,j]
     >= 1
-
-end

@@ -4,8 +4,9 @@ vars
     y continuous
     z continuous
 
+
 maximize
-    5*x + 2*y + 7*z
+    
 
 subject to
 
@@ -26,3 +27,4 @@ subject to
       
     r6:
         z >= 0
+
