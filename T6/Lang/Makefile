@@ -1,18 +1,29 @@
-ANTLR_JAR=antlr-4.13.2-complete.jar
+ANTLR_JAR = antlr-4.13.2-complete.jar
 
-ENTRADA="../testcases/1-restricoes_isoladas.pl"
-SAIDA="../saida/1.cpp"
+TEST_DIR = ../testcases
+TEST_OUT = ../saida
+
+ENTRADA = $(TEST_DIR)/5-error_no_max_func.pl
+SAIDA = $(TEST_OUT)/5.cpp
 
 gen:
 	java -jar ../../$(ANTLR_JAR) \
 		-Dlanguage=Go \
 		-visitor \
-		-o \
-		parser \
-		Grammar.g4 
+		-o parser \
+		Grammar.g4
+
+build:
+	go build -o pl-compiler *.go
 
 test:
 	./pl-compiler $(ENTRADA) $(SAIDA)
 
-build:
-	go build -o pl-compiler *.go
+test-all:
+	@mkdir -p $(TEST_OUT)
+	@for file in $(wildcard $(TEST_DIR)/*); do \
+		name=$$(basename "$$file"); \
+		out="$(TEST_OUT)/$${name%.*}.cpp"; \
+		echo "==> $$name -> $$(basename "$$out")"; \
+		./pl-compiler "$$file" "$$out"; \
+	done
