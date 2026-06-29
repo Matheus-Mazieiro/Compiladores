@@ -65,6 +65,11 @@ func main() {
 		return
 	}
 
+	// Gerador de codigo
+	gen := NewGerador()
+	tree.Accept(gen)
+	fmt.Fprint(output, gen.Codigo())
+
 	fmt.Println("END\n\n")
 }
 

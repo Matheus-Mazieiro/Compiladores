@@ -9,42 +9,6 @@ import (
 
 const DEBUG = false
 
-// Regra para saber o que tem lógica e o que é só passar para os filhos:
-// 1. Declara alguma coisa? Tem lógica
-// 2. Cria um novo escopo? Tem lógica
-// 3. Usa um identificador? Tem lógica
-// 4. Apenas agrupa outras regras? Só chama
-
-// O que o chatgpt faria?
-//| Regra                | Implementar lógica? |
-//| -------------------- | ------------------- |
-//| program              | ❌                   |
-//| declarations         | ❌                   |
-//| setDecl              | ❌                   |
-//| **setDefinition**    | ✅                   |
-//| paramDecl            | ❌                   |
-//| **parameter**        | ✅                   |
-//| **variable**         | ✅                   |
-//| identifierList       | ❌                   |
-//| **reference**        | ✅                   |
-//| domain               | ❌                   |
-//| objective            | ❌                   |
-//| constraints          | ❌                   |
-//| constraint           | ❌                   |
-//| simpleConstraint     | ❌                   |
-//| **subsetConstraint** | ✅                   |
-//| whereClause          | ❌                   |
-//| iteratorList         | ❌                   |
-//| **iterator**         | ✅                   |
-//| linearConstraint     | ❌                   |
-//| expression           | ❌                   |
-//| additiveExpr         | ❌                   |
-//| multiplicativeExpr   | ❌                   |
-//| unaryExpr            | ❌                   |
-//| **summation**        | ✅                   |
-//| expressionList       | ❌                   |
-//| comparator           | ❌                   |
-
 type ErroSemantico struct {
 	Msg   string
 	Linha int
