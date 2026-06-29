@@ -1,0 +1,4 @@
+maximize
+    x
+
+subject to

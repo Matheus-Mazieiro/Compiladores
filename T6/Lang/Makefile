@@ -3,8 +3,8 @@ ANTLR_JAR = antlr-4.13.2-complete.jar
 TEST_DIR = ../testcases
 TEST_OUT = ../saida
 
-ENTRADA = $(TEST_DIR)/5-error_no_max_func.pl
-SAIDA = $(TEST_OUT)/5.cpp
+ENTRADA = $(TEST_DIR)/0-playground.pl
+SAIDA = $(TEST_OUT)/0.cpp
 
 gen:
 	java -jar ../../$(ANTLR_JAR) \

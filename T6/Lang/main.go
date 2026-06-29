@@ -46,14 +46,26 @@ func main() {
 		fmt.Println("Erro ao abrir o arquivo de entrada:", err)
 		return
 	}
-	if errs := lex.Parser(input); len(errs) > 0 {
+
+	tree, errs := lex.Parser(input)
+	if len(errs) > 0 {
 		for _, e := range errs {
 			fmt.Println(e.Msg)
 		}
 		return
 	}
 
-	fmt.Println("Programa válido!")
+	// Analise Semantica
+	sem := NewPlSemantic()
+	tree.Accept(sem)
+	if len(sem.erros) > 0 {
+		for _, e := range sem.erros {
+			fmt.Fprintf(output, "Linha %d: %s\n", e.Linha, e.Msg)
+		}
+		return
+	}
+
+	fmt.Println("END\n\n")
 }
 
 // Necessário para evitar index out of bounds ao recuperar os nomes

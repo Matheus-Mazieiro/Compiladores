@@ -83,7 +83,7 @@ func (la *LexicAnal) Anal(input *antlr.FileStream) []LexicErr {
 }
 
 // Realiza a análise sintática.
-func (la *LexicAnal) Parser(input *antlr.FileStream) []LexicErr {
+func (la *LexicAnal) Parser(input *antlr.FileStream) (parser.IProgramContext, []LexicErr) {
 	lexer := parser.NewGrammarLexer(input)
 
 	tokens := antlr.NewCommonTokenStream(lexer, antlr.TokenDefaultChannel)
@@ -94,7 +94,7 @@ func (la *LexicAnal) Parser(input *antlr.FileStream) []LexicErr {
 	p.AddErrorListener(la.el)
 
 	// Regra inicial
-	p.Program()
+	t := p.Program()
 
-	return la.el.errors
+	return t, la.el.errors
 }

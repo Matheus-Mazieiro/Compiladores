@@ -1,0 +1,80 @@
+==> 12-error_sem_unexisted_set.pl -> 12-error_sem_unexisted_set.cpp
+Linha 2: 'J' não é um conjunto declarado
+END
+
+
+==> 0-playground.pl -> 0-playground.cpp
+END
+
+
+==> 13-error_sem_missing_index.pl -> 13-error_sem_missing_index.cpp
+Linha 9: 'x' foi declarado com 2 dimensão(ões), mas utilizado com 1
+END
+
+
+==> 22-correct.pl -> 22-correct.cpp
+END
+
+
+==> 10-error_sem_duplicated_param.pl -> 10-error_sem_duplicated_param.cpp
+Linha 3: 'c' já foi declarado
+END
+
+
+==> 6-error_lex.pl -> 6-error_lex.cpp
+token recognition error at: '@'
+==> 17-error_sem_iterator_duplicated.pl -> 17-error_sem_iterator_duplicated.cpp
+Linha 5: iterador 'i' já declarado neste escopo
+END
+
+
+==> 18-error_sem_iterator_out_of_bounds.pl -> 18-error_sem_iterator_out_of_bounds.cpp
+END
+
+
+==> 15-error_sem_escalar_indexed.pl -> 15-error_sem_escalar_indexed.cpp
+Linha 5: 'x' foi declarado com 0 dimensão(ões), mas utilizado com 1
+END
+
+
+==> 16-error_sem_indexed_without_index.pl -> 16-error_sem_indexed_without_index.cpp
+Linha 8: 'x' foi declarado com 1 dimensão(ões), mas utilizado com 0
+END
+
+
+==> 14-error_sem_extra_index.pl -> 14-error_sem_extra_index.cpp
+Linha 8: 'x' foi declarado com 1 dimensão(ões), mas utilizado com 2
+END
+
+
+==> 9-error_sem_duplicated_var.pl -> 9-error_sem_duplicated_var.cpp
+Linha 3: 'x' já foi declarado
+END
+
+
+==> 7-error_sint.pl -> 7-error_sint.cpp
+mismatched input 'subject' expecting {'(', 'sum', IDENT, NUMBER}
+==> 8-error_sem_duplicated_set.pl -> 8-error_sem_duplicated_set.cpp
+Linha 3: 'I' já foi declarado
+END
+
+
+==> 20-error_sem_subset_of_unexisted_set.pl -> 20-error_sem_subset_of_unexisted_set.cpp
+Linha 6: identificador 'V' não declarado
+END
+
+
+==> 21-error_sem_subset_shadow.pl -> 21-error_sem_subset_shadow.cpp
+END
+
+
+==> 19-error_sem_iterator_set_unexisted.pl -> 19-error_sem_iterator_set_unexisted.cpp
+Linha 2: identificador 'I' não declarado
+END
+
+
+==> 11-error_sem_not_declared.pl -> 11-error_sem_not_declared.cpp
+Linha 2: identificador 'x' não declarado
+END
+
+
